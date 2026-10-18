@@ -13,11 +13,14 @@ fetch(cfg.supabaseUrl+'/functions/v1/promoflash-events',{method:'POST',headers:{
 window.PROMOFLASH_TRACK=(name,props={})=>{let detail=props;try{detail={...JSON.parse(sessionStorage.getItem('pf_utm')||'{}'),...props}}catch(e){}try{firstPartyEvent(name,detail);if(window.gtag)window.gtag('event',name,detail);if(window.fbq)window.fbq('trackCustom',name,detail);if(window.plausible)window.plausible(name,{props:detail})}catch(e){}};
 let choice=null;try{choice=localStorage.getItem('promoflash_analytics_choice')}catch(e){}
 if(choice==='yes')start();
-if(!choice){
-const div=document.createElement('div');div.style.cssText='position:fixed;bottom:14px;left:14px;right:14px;max-width:630px;margin:auto;background:#18172c;color:white;padding:15px;border-radius:15px;z-index:100;box-shadow:0 14px 45px #2225;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font:13px system-ui';
-const txt=document.createElement('span');txt.textContent='¿Autorizas medición anónima de uso y publicidad? Puedes rechazar y seguir usando el editor.';txt.style.flex='1 1 260px';const ok=document.createElement('button'),no=document.createElement('button');ok.textContent='Aceptar';no.textContent='Rechazar';for(const b of [ok,no])b.style.cssText='border:0;border-radius:9px;padding:9px 12px;cursor:pointer;font-weight:700';ok.style.background='#dbff53';no.style.background='#ccc';
-function choose(v){try{localStorage.setItem('promoflash_analytics_choice',v)}catch(e){}div.remove();if(v==='yes')start()}
-ok.onclick=()=>choose('yes');no.onclick=()=>choose('no');div.append(txt,ok,no);document.body.appendChild(div);
+
+const footer=document.querySelector('footer.footer');
+if(footer){const opt=document.createElement('button');opt.type='button';opt.id='analyticsPreference';
+opt.textContent=choice==='yes'?'Desactivar estadísticas':'Permitir estadísticas';
+opt.title='Medición de uso voluntaria';
+opt.style.cssText='background:none;border:0;padding:4px;color:inherit;text-decoration:underline;font:inherit;cursor:pointer';
+opt.onclick=()=>{try{localStorage.setItem('promoflash_analytics_choice',choice==='yes'?'no':'yes')}catch(e){}location.reload()};
+footer.appendChild(opt);
 }
 window.PROMOFLASH_TRACK('editor_view',{});
 })();

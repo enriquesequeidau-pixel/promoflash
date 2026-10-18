@@ -1,0 +1,8 @@
+PROMOFLASH v1.3 — SIN VENTANAS DE ANALÍTICA
+
+1. Abre github.com/enriquesequeidau-pixel/promoflash.
+2. Upload files: sube index.html, analytics-editor.js, landing.js y privacidad.html a la RAÍZ, reemplazando los existentes.
+3. No subas INSTRUCCIONES.txt si no lo necesitas.
+4. Tras publicar GitHub Pages, recarga con Ctrl+F5 (o en incógnito) y comprueba que ya no aparece el aviso de analítica.
+5. El editor y los registros de interesados siguen funcionando. La medición opcional SOLO se activa si el visitante toca el enlace discreto «Permitir estadísticas».
+6. PromoFlash Pro no acepta pagos todavía; no habilites cobros hasta probarlos.
