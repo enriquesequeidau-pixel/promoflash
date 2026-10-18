@@ -1,5 +1,7 @@
 # Mercado Pago — PromoFlash Pro
 
+Plan confirmado por el usuario: **$4.990 CLP al mes**. No comprobado independientemente en checkout.
+
 Enlace público configurado: https://mpago.la/2iWVYnc
 
 **Estado: cobros DESHABILITADOS en la web** (`config.js`: `proPaymentsEnabled: false`). No compartir el enlace con clientes hasta que las funcionalidades de Pro, la autenticación, la conciliación de suscripciones, cancelaciones y la entrega automática de acceso estén verificadas.

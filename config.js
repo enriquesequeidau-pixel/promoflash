@@ -6,6 +6,8 @@ window.PROMOFLASH_CONFIG = {
   metaPixelId: '',
   plausibleDomain: '',
   proCheckoutUrl: 'https://mpago.la/2iWVYnc',
+  proPriceCLP: 4990,
+  proBillingInterval: 'month',
   proPaymentsEnabled: false, // Activar solo despues de implementar y verificar la entrega de Pro
   contactEmail: 'enrique.sequeidau@mayor.cl'
 };
