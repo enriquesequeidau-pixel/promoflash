@@ -1,6 +1,10 @@
-// Configuración pública. NO pongas aquí secretos ni claves de servicio.
+// Solo valores publicos. Nunca colocar service_role ni claves privadas.
 window.PROMOFLASH_CONFIG = {
-  supabaseUrl: '',            // Ej: https://tu-proyecto.supabase.co
-  supabaseAnonKey: '',        // Clave pública anon/publishable, nunca service_role
-  plausibleDomain: ''         // Dominio configurado en Plausible (opcional)
+  supabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co',
+  supabaseAnonKey: 'sb_publishable_L8vt_f3MzyLvur4AXpfW4w__NTlLsle',
+  ga4MeasurementId: '',
+  metaPixelId: '',
+  plausibleDomain: '',
+  proCheckoutUrl: '',
+  contactEmail: 'enrique.sequeidau@mayor.cl'
 };

@@ -38,9 +38,7 @@
   const state = {category:'beauty', format:'story', batch:0, image:null, photoUrl:null};
   let debounce=null;
   const localKey = 'promoflash_studio_v06';
-  const analyticsDomain=(window.PROMOFLASH_CONFIG||{}).plausibleDomain;
-  if(analyticsDomain){const script=document.createElement('script');script.defer=true;script.src='https://plausible.io/js/script.js';script.dataset.domain=analyticsDomain;document.head.appendChild(script);}
-  function track(name, props={}) {try { if(typeof window.plausible==='function') window.plausible(name,{props}); }catch(e){} }
+  function track(name,props={}) {if(typeof window.PROMOFLASH_TRACK==='function')window.PROMOFLASH_TRACK(name,props);}
   function readInputs(){const get = id => $(id).value.trim(); return { category:state.category, name:get('productName')||'Tu producto', price:get('price')||'$0', oldPrice:get('oldPrice'), brand:get('brand')||'MI TIENDA', discount:get('discount'), headline:get('headline')||'OFERTA ESPECIAL', subtitle:get('subtitle'), cta:get('cta')||'LO QUIERO →', contain:$('containPhoto').checked };}
   function save(){try{localStorage.setItem(localKey,JSON.stringify({category:state.category, values:readInputs()}));}catch(e){}}
   function restore(){try{const data=JSON.parse(localStorage.getItem(localKey)); if(data && examples[data.category]){state.category=data.category;const v=data.values||{}; Object.keys(examples.beauty).forEach(k=>{if(typeof v[k]==='string' && $(k)) $(k).value=v[k]});$('containPhoto').checked=!!v.contain;}}catch(e){}}
