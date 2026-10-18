@@ -5,6 +5,7 @@ window.PROMOFLASH_CONFIG = {
   ga4MeasurementId: '',
   metaPixelId: '',
   plausibleDomain: '',
-  proCheckoutUrl: '',
+  proCheckoutUrl: 'https://mpago.la/2iWVYnc',
+  proPaymentsEnabled: false, // Activar solo despues de implementar y verificar la entrega de Pro
   contactEmail: 'enrique.sequeidau@mayor.cl'
 };
