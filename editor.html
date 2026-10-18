@@ -1,311 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PromoFlash Studio — Crea promos que sí llaman la atención</title>
-<meta name="description" content="Sube tu foto, elige una plantilla real y genera una promo lista para publicar en segundos.">
-<style>
-:root{
-  --bg:#f4f6fb; --ink:#1e2340; --muted:#697189; --line:#e3e7f2; --brand:#6f54f6; --card:#fff;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-}
-*{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink)}
-a{text-decoration:none;color:inherit} button,input,select{font:inherit}
-button{cursor:pointer;border:0} img{max-width:100%}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8d7bff;outline-offset:3px}
-header{background:#fff;border-bottom:1px solid var(--line);padding:16px max(18px, calc((100vw - 1320px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20}
-.brand{font-size:24px;font-weight:950;letter-spacing:-1.2px}.brand span{color:var(--brand)}
-.tag{font-size:12px;font-weight:800;padding:8px 12px;background:#f0ecff;color:#5c42c8;border-radius:999px}
-main{max-width:1320px;margin:auto;padding:28px 18px 54px}
-.hero{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}
-.hero h1{margin:4px 0 10px;font-size:clamp(30px,4.6vw,54px);letter-spacing:-2.3px;line-height:1.02}
-.hero p{margin:0;color:var(--muted);max-width:720px;line-height:1.6}
-.badge{display:inline-flex;gap:8px;align-items:center;background:#eef9f4;color:#187a56;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.4px}
-.grid{display:grid;grid-template-columns:380px minmax(340px,1fr) 290px;gap:18px;align-items:start}
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 14px 34px rgba(34,45,91,.06)}
-.panel{padding:20px}
-.panel h2{margin:0 0 16px;font-size:16px;letter-spacing:-.3px}
-.step{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:10px;background:#f2efff;color:#5a43c6;font-weight:900;margin-right:8px}
-.field{margin:14px 0}
-label{display:block;font-size:12px;font-weight:800;color:#4f5874;margin-bottom:7px}
-input[type=text], select{width:100%;padding:12px 13px;border:1px solid #dbe0ed;border-radius:12px;background:#fff;color:#1e2340}
-input[type=file]{width:100%;padding:14px;border:1px dashed #a598ec;border-radius:16px;background:#faf9ff}
-.row2,.row3{display:grid;gap:10px}.row2{grid-template-columns:1fr 1fr}.row3{grid-template-columns:repeat(3,1fr)}
-.help,.error{font-size:12px;min-height:16px}.help{color:#7a8398}.error{color:#b32748}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:10px 12px;border-radius:12px;background:#f5f7fc;border:1px solid #e6ebf5;font-weight:700;font-size:13px;color:#3d4767}
-.chip.active{background:#ede8ff;border-color:#b1a4ff;color:#583cc8}
-.templates{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.template{background:#fafbff;border:2px solid transparent;border-radius:18px;padding:8px;text-align:left}
-.template.active{border-color:#7c63f2;background:#f8f6ff}
-.thumb{height:116px;border-radius:12px;position:relative;overflow:hidden;background:#ddd}
-.thumb .miniBar,.thumb .miniBtn,.thumb .miniPrice,.thumb .miniPhoto,.thumb .miniTitle,.thumb .miniSticker{position:absolute}
-.thumb.flash{background:linear-gradient(150deg,#fee561,#ffb16d)}
-.thumb.luxe{background:linear-gradient(160deg,#15202c,#36414b)}
-.thumb.catalog{background:linear-gradient(180deg,#fafbfd,#eaedf7)}
-.thumb.neon{background:linear-gradient(145deg,#251f5f,#fd5d95)}
-.thumb.soft{background:linear-gradient(145deg,#f9e4ee,#e9f2ff)}
-.thumb.price{background:linear-gradient(145deg,#d0f4e4,#f4fffb)}
-.thumb .miniBar{left:8px;top:8px;width:56px;height:16px;border-radius:999px;background:rgba(255,255,255,.85)}
-.thumb .miniPhoto{right:10px;top:28px;width:44px;height:52px;border-radius:12px;background:rgba(255,255,255,.65)}
-.thumb .miniTitle{left:8px;top:34px;width:74px;height:10px;border-radius:99px;background:rgba(0,0,0,.18)}
-.thumb .miniSticker{left:8px;top:50px;width:56px;height:12px;border-radius:99px;background:rgba(255,255,255,.85)}
-.thumb .miniPrice{left:8px;bottom:20px;width:64px;height:26px;border-radius:12px;background:rgba(255,255,255,.9)}
-.thumb .miniBtn{left:8px;right:8px;bottom:8px;height:16px;border-radius:10px;background:rgba(0,0,0,.16)}
-.template b{display:block;font-size:13px;margin:8px 0 2px}.template small{font-size:12px;color:#7b8396}
-.stack{display:grid;gap:14px}
-.previewCard{padding:18px;position:sticky;top:78px}
-.previewTop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
-.previewTop h2{margin:0;font-size:17px}.formatSelect{max-width:190px}
-.canvasShell{border-radius:22px;background:radial-gradient(circle at top,#dad3ff,#f2f3f9 65%);padding:18px;display:grid;place-items:center;min-height:620px}
-canvas{display:block;max-width:100%;height:auto;max-height:690px;border-radius:24px;box-shadow:0 24px 45px rgba(29,35,64,.2)}
-.actions{display:flex;gap:10px;margin-top:14px}.btn{padding:14px 16px;border-radius:14px;font-weight:900}.btn.primary{background:linear-gradient(135deg,#7457f3,#5c9cff);color:#fff;flex:1}.btn.secondary{background:#f0ecff;color:#5c42c8}.btn.ghost{background:#f5f7fc;color:#394466;border:1px solid #e4e9f4}
-.tipBox{padding:18px;border-radius:18px;background:linear-gradient(145deg,#1d2340,#2a2f52);color:#fff}.tipBox h3{margin:0 0 8px;font-size:15px}.tipBox p{margin:0;color:#d5dcf5;font-size:14px;line-height:1.55}.tipList{margin:10px 0 0;padding-left:18px;color:#e7ebfb}.tipList li{margin:8px 0}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.metric{background:#f7f8fd;border:1px solid #e6ebf6;border-radius:14px;padding:12px}.metric b{display:block;font-size:18px}.metric span{font-size:12px;color:#7e8699}
-.footerNote{margin-top:14px;font-size:12px;color:#7f8798;line-height:1.5}
-@media(max-width:1140px){.grid{grid-template-columns:340px 1fr}.side{grid-column:1/-1}.previewCard{position:static}.canvasShell{min-height:540px}}
-@media(max-width:760px){header{position:static}.hero{display:block}.grid{grid-template-columns:1fr}.templates{grid-template-columns:1fr 1fr}.row2,.row3{grid-template-columns:1fr}.actions{flex-direction:column}.canvasShell{min-height:420px;padding:12px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f6f2">
+  <meta name="description" content="Sube una foto y crea tres promociones para tus redes sociales en segundos, gratis y sin registrarte.">
+  <title>Crear promos gratis | PromoFlash Studio</title>
+  <link rel="stylesheet" href="editor.css">
 </head>
 <body>
-<header>
-  <a href="./index.html" class="brand">⚡ Promo<span>Flash</span></a>
-  <span class="tag">Studio v0.5 · Más plantillas, más enganche</span>
-</header>
-<main>
-  <section class="hero">
-    <div>
-      <div class="badge">● Nuevo editor orientado a conversión</div>
-      <h1>Crea promos que sí se ven <span style="color:var(--brand)">listas para publicar</span>.</h1>
-      <p>Ya no es solo “poner texto encima”. Elige una plantilla real, carga tu producto y usa ganchos rápidos para que tu promoción salga más atractiva desde el primer intento.</p>
-    </div>
+<header class="site-header"><div class="head-inner">
+  <a href="./index.html" class="wordmark" aria-label="PromoFlash, inicio"><span class="flash-mark">✳</span> promo<span>flash</span><sup>studio</sup></a>
+  <div class="head-right"><span class="online-dot"></span><span>Editor gratis</span><a href="./index.html" class="head-link">Inicio ↗</a></div>
+</div></header>
+<main class="shell">
+  <section class="intro">
+    <div class="eyebrow"><span class="sparkle">✳</span> DISEÑOS EN UN CLIC <span class="eyebrow-rule"></span> SIN SABER DISEÑAR</div>
+    <h1>Tu producto. <em>Tres promos increíbles.</em></h1>
+    <p>Completa lo esencial y listo: te damos tres diseños diferentes para publicar. Sin registro, sin tarjeta, sin complicarte.</p>
   </section>
-
-  <section class="grid">
-    <div class="stack">
-      <div class="card panel">
-        <h2><span class="step">1</span>Datos del producto</h2>
-        <div class="field">
-          <label for="photo">Foto del producto</label>
-          <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
-          <div class="error" id="error"></div>
-          <div class="help">JPG, PNG o WebP. Máximo 12 MB.</div>
-        </div>
-        <div class="field"><label for="category">Rubro</label>
-          <select id="category">
-            <option value="beauty">Belleza / skincare</option>
-            <option value="fashion">Ropa y accesorios</option>
-            <option value="jewelry">Joyería</option>
-            <option value="food">Comida / pastelería</option>
-            <option value="home">Hogar / deco</option>
-          </select>
-        </div>
-        <div class="field"><label for="name">Nombre del producto</label><input type="text" id="name" maxlength="55" value="Glow Serum Facial"></div>
-        <div class="row2">
-          <div class="field"><label for="price">Precio actual</label><input type="text" id="price" maxlength="20" value="$299 MXN"></div>
-          <div class="field"><label for="oldPrice">Precio anterior</label><input type="text" id="oldPrice" maxlength="20" value="$399"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label for="discount">Descuento</label><input type="text" id="discount" maxlength="16" value="-25%"></div>
-          <div class="field"><label for="brand">Tu tienda</label><input type="text" id="brand" maxlength="24" value="MI TIENDA"></div>
+  <div class="workbench">
+    <section class="setup" aria-label="Datos de tu promoción">
+      <div class="setup-card">
+        <div class="step-heading"><span class="step-num">01</span><div><h2>¿Qué vendes?</h2><p>Elegimos estilos y textos que van con tu negocio.</p></div></div>
+        <div class="category-grid" id="categoryGrid" role="group" aria-label="Rubro del negocio">
+          <button class="category active" type="button" data-category="beauty" aria-pressed="true"><span class="category-icon">✺</span><span>Belleza</span></button>
+          <button class="category" type="button" data-category="fashion" aria-pressed="false"><span class="category-icon">◈</span><span>Moda</span></button>
+          <button class="category" type="button" data-category="jewelry" aria-pressed="false"><span class="category-icon">✧</span><span>Joyas</span></button>
+          <button class="category" type="button" data-category="food" aria-pressed="false"><span class="category-icon">◕</span><span>Comida</span></button>
+          <button class="category" type="button" data-category="home" aria-pressed="false"><span class="category-icon">⌂</span><span>Hogar</span></button>
         </div>
       </div>
-
-      <div class="card panel">
-        <h2><span class="step">2</span>Gancho rápido</h2>
-        <div class="field"><label for="headline">Titular principal</label><input type="text" id="headline" maxlength="40" value="OFERTA DE LA SEMANA"></div>
-        <div class="field"><label for="subline">Subtítulo / beneficio</label><input type="text" id="subline" maxlength="48" value="Piel radiante con envío gratis"></div>
-        <div class="field"><label for="cta">Llamado a la acción</label><input type="text" id="cta" maxlength="30" value="¡PÍDELO HOY!"></div>
-        <div class="chips" id="offerTypes">
-          <button class="chip active" data-offer="sale" type="button">Oferta</button>
-          <button class="chip" data-offer="new" type="button">Nuevo</button>
-          <button class="chip" data-offer="bundle" type="button">Pack</button>
-          <button class="chip" data-offer="limited" type="button">Urgencia</button>
+      <div class="setup-card">
+        <div class="step-heading"><span class="step-num">02</span><div><h2>Cuéntanos del producto</h2><p>Con poquitos datos basta para empezar.</p></div></div>
+        <label for="photo" class="upload-area" id="dropZone"><span class="upload-icon">↥</span><span class="upload-main"><strong id="uploadLabel">Subir foto de mi producto</strong><small>JPG, PNG o WebP · Máx. 12 MB</small></span><span class="upload-arrow">↗</span></label>
+        <input class="sr-only" type="file" id="photo" accept="image/png,image/jpeg,image/webp" aria-describedby="uploadError">
+        <p id="uploadError" class="form-error" role="alert"></p>
+        <div class="form-grid">
+          <div class="field wide"><label for="productName">Nombre del producto</label><input id="productName" type="text" maxlength="46" value="Glow Serum Facial" placeholder="Ej. Serum vitamina C"></div>
+          <div class="field"><label for="price">Precio de venta</label><input id="price" type="text" maxlength="18" value="$299 MXN" placeholder="$299 MXN"></div>
+          <div class="field"><label for="oldPrice">Antes <span>(opcional)</span></label><input id="oldPrice" type="text" maxlength="18" value="$399" placeholder="$399"></div>
+          <div class="field wide"><label for="brand">Nombre de tu tienda</label><input id="brand" type="text" maxlength="28" value="LUNA BEAUTY" placeholder="Mi tienda"></div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:14px">
-          <button class="btn secondary" id="generateHook" type="button">✨ Generar idea</button>
-          <button class="btn ghost" id="loadExample" type="button">⚡ Cargar ejemplo</button>
-        </div>
+        <details class="more-settings" id="advancedSettings"><summary>✦ Personalizar mensaje y oferta <span>⌄</span></summary>
+          <div class="advanced-fields">
+            <div class="field"><label for="promoType">Tipo de promoción</label><select id="promoType"><option value="sale">Descuento</option><option value="new">Nuevo producto</option><option value="pack">Pack especial</option><option value="limited">Unidades limitadas</option></select></div>
+            <div class="field"><label for="discount">Etiqueta de oferta</label><input id="discount" type="text" maxlength="15" value="-25%" placeholder="-25%"></div>
+            <div class="field wide"><label for="headline">Titular</label><input id="headline" type="text" maxlength="42" value="TU RUTINA, MÁS LINDA" placeholder="El titular de tu promo"></div>
+            <div class="field wide"><label for="subtitle">Texto de apoyo</label><input id="subtitle" type="text" maxlength="70" value="Tu momento glow comienza hoy" placeholder="Beneficio o mensaje corto"></div>
+            <div class="field wide"><label for="cta">Llamado a la acción</label><input id="cta" type="text" maxlength="29" value="QUIERO EL MÍO →" placeholder="¡Lo quiero!"></div>
+            <label class="checkbox"><input type="checkbox" id="containPhoto">Mostrar foto completa, sin recortar</label>
+          </div>
+        </details>
+        <button id="generate" class="generate-button" type="button"><span>✳</span> Crear mis 3 promos <span class="button-arrow">→</span></button>
+        <p class="microcopy"><span>✓</span> Sin registrarte <span>✓</span> Sin tarjeta <span>✓</span> Descarga gratis</p>
       </div>
-    </div>
-
-    <div class="card previewCard">
-      <div class="previewTop">
-        <h2>Vista previa en vivo</h2>
-        <select id="format" class="formatSelect">
-          <option value="story">Historia 1080×1920</option>
-          <option value="post">Post 1080×1350</option>
-          <option value="square">Cuadrado 1080×1080</option>
-        </select>
-      </div>
-      <div class="canvasShell">
-        <canvas id="canvas" aria-label="Previsualización de la promoción"></canvas>
-      </div>
-      <div class="actions">
-        <button class="btn secondary" id="randomTemplate" type="button">↻ Otra plantilla</button>
-        <button class="btn primary" id="download" type="button">↓ Descargar PNG</button>
-      </div>
-      <div class="footerNote">Tu imagen se procesa en el navegador. No subimos tu foto. El archivo descargado está listo para publicar en redes.</div>
-    </div>
-
-    <aside class="stack side">
-      <div class="card panel">
-        <h2><span class="step">3</span>Elige una plantilla real</h2>
-        <div class="templates" id="templates">
-          <button class="template active" data-template="flash" type="button">
-            <div class="thumb flash"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniSticker"></div><div class="miniPhoto"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Flash Sale</b><small>Directa, colorida y comercial</small>
-          </button>
-          <button class="template" data-template="luxe" type="button">
-            <div class="thumb luxe"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniPhoto"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Luxe Spotlight</b><small>Minimalista y premium</small>
-          </button>
-          <button class="template" data-template="catalog" type="button">
-            <div class="thumb catalog"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniPhoto"></div><div class="miniSticker"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Story Catálogo</b><small>Ordenado y fácil de leer</small>
-          </button>
-          <button class="template" data-template="neon" type="button">
-            <div class="thumb neon"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniPhoto"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Neon Drop</b><small>Más juvenil y llamativa</small>
-          </button>
-          <button class="template" data-template="soft" type="button">
-            <div class="thumb soft"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniPhoto"></div><div class="miniSticker"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Soft Beauty</b><small>Suave, femenina y estética</small>
-          </button>
-          <button class="template" data-template="price" type="button">
-            <div class="thumb price"><div class="miniBar"></div><div class="miniTitle"></div><div class="miniSticker"></div><div class="miniPhoto"></div><div class="miniPrice"></div><div class="miniBtn"></div></div>
-            <b>Price Tower</b><small>Precio protagonista</small>
-          </button>
-        </div>
-      </div>
-
-      <div class="tipBox card panel">
-        <h3>¿Qué hace que enganche mejor?</h3>
-        <p>Para anuncios y ventas masivas, el resultado tiene que comunicar el beneficio en un vistazo.</p>
-        <ul class="tipList">
-          <li>Usa un titular corto y claro.</li>
-          <li>Muestra ahorro o beneficio real.</li>
-          <li>Haz que el precio destaque mucho.</li>
-          <li>Usa CTA directo: “Pídelo hoy”, “Compra ahora”.</li>
-        </ul>
-        <div class="metrics">
-          <div class="metric"><b>6</b><span>plantillas reales</span></div>
-          <div class="metric"><b>5</b><span>rubros con presets</span></div>
-        </div>
-      </div>
-    </aside>
-  </section>
+    </section>
+    <section class="results" id="resultSection" aria-label="Tus tres promociones">
+      <div class="results-head"><div><div class="result-eyebrow"><span class="live-dot"></span> RESULTADOS EN VIVO</div><h2>¡Mira lo que creamos! <span class="little-star">✦</span></h2><p id="resultsNote">Tres estilos, una misma foto. Elige tu favorito.</p></div><div class="format-switch" role="group" aria-label="Formato de exportación"><button class="format active" data-format="story" aria-pressed="true">Historia</button><button class="format" data-format="post" aria-pressed="false">Post</button><button class="format" data-format="square" aria-pressed="false">Cuadrado</button></div></div>
+      <div id="resultGallery" class="gallery" aria-live="polite"></div>
+      <div class="result-actions"><button type="button" class="all-button" id="downloadAll">↓ Descargar las 3 gratis <span>ZIP</span></button><button type="button" class="remix-button" id="remix">↻ Dame otras ideas</button></div>
+      <div class="result-foot"><div class="foot-icon">♡</div><div><b>Hecho para emprender sin complicaciones</b><span>Las fotos se procesan en tu dispositivo. Los diseños se crean con plantillas, sin IA de pago.</span></div></div>
+    </section>
+  </div>
+  <footer class="footer"><span>✳ PromoFlash Studio</span><span>Una foto. Tres oportunidades de vender.</span><span>Hecho con cariño para Latinoamérica.</span></footer>
 </main>
-
-<script>
-(()=>{
-  const $ = id => document.getElementById(id);
-  const canvas = $('canvas');
-  const ctx = canvas.getContext('2d');
-
-  const state = {
-    template: 'flash',
-    offer: 'sale',
-    img: null,
-    category: 'beauty'
-  };
-
-  const formats = { story:[1080,1920], post:[1080,1350], square:[1080,1080] };
-
-  const examples = {
-    beauty:{name:'Glow Serum Facial',price:'$299 MXN',oldPrice:'$399',discount:'-25%',brand:'LUNA BEAUTY',headline:'OFERTA DE LA SEMANA',subline:'Piel radiante con envío gratis',cta:'¡PÍDELO HOY!'},
-    fashion:{name:'Blusa Sofia',price:'$449 MXN',oldPrice:'$599',discount:'-20%',brand:'MIA STORE',headline:'NUEVA COLECCIÓN',subline:'Looks versátiles para todos los días',cta:'¡ORDENA AHORA!'},
-    jewelry:{name:'Aros Golden Glow',price:'$189 MXN',oldPrice:'$249',discount:'-24%',brand:'AURA JOYAS',headline:'BRILLA MÁS',subline:'Detalles delicados que elevan tu look',cta:'¡RESÉRVALOS!'},
-    food:{name:'Box de Brownies',price:'$180 MXN',oldPrice:'$240',discount:'-25%',brand:'DULCE CASA',headline:'ANTOJO DEL DÍA',subline:'Recién horneados y listos para entregar',cta:'¡PIDE EL TUYO!'},
-    home:{name:'Vela Aromática Linen',price:'$159 MXN',oldPrice:'$219',discount:'-27%',brand:'CASA NUBE',headline:'RENUEVA TU ESPACIO',subline:'Aroma suave para una casa más acogedora',cta:'¡LLÉVALA HOY!'}
-  };
-
-  const hookBank = {
-    beauty:{sale:[['OFERTA DE LA SEMANA','Tu rutina favorita ahora con descuento','¡PÍDELO HOY!'],['PIEL QUE SE NOTA','Cuida tu rostro sin pagar de más','¡QUIERO EL MÍO!']],new:[['NUEVO FAVORITO','Lleva brillo y cuidado a tu rutina','¡DESCÚBRELO!']],bundle:[['KIT IMPERDIBLE','Combina más y ahorra más','¡LLEVÁTELO!']],limited:[['ÚLTIMAS UNIDADES','Aprovecha antes de que se agote','¡COMPRA YA!']]},
-    fashion:{sale:[['DESCUENTO FLASH','Eleva tu look por menos','¡PÍDELA HOY!']],new:[['NUEVA COLECCIÓN','Prendas que combinan con todo','¡QUIERO VERLA!']],bundle:[['ARMA TU OUTFIT','Combina 2 y ahorra más','¡CÓMPRALO!']],limited:[['SE VA RÁPIDO','Talla limitada disponible','¡RESERVA YA!']]},
-    jewelry:{sale:[['BRILLA MÁS','Joyas lindas con precio especial','¡PÍDELAS!']],new:[['NUEVAS PIEZAS','Detalles delicados para regalar o usar','¡DESCÚBRELAS!']],bundle:[['SET FAVORITO','Aros + collar con mejor precio','¡LO QUIERO!']],limited:[['EDICIÓN LIMITADA','Diseños que vuelan rápido','¡RESERVA AHORA!']]},
-    food:{sale:[['PROMO DEL DÍA','Más sabor por menos','¡PÍDELO YA!']],new:[['RECIÉN HORNEADO','Algo rico para alegrar tu día','¡SE ME ANTOJA!']],bundle:[['PACK FAMILIAR','Comparte y ahorra en cada pedido','¡ORDÉNALO!']],limited:[['SOLO POR HOY','Se acaba cuando se acaba','¡PÍDELO AHORA!']]},
-    home:{sale:[['TU CASA, MÁS LINDA','Deco especial a mejor precio','¡LLÉVATELA!']],new:[['NUEVA LLEGADA','Un detalle simple que cambia todo','¡VER MÁS!']],bundle:[['COMBINA Y AHORRA','Arma tu rincón ideal','¡QUIERO EL PACK!']],limited:[['POCAS PIEZAS','No dejes pasar esta edición','¡COMPRA YA!']]}
-  };
-
-  const templateThemes = {
-    flash:{bg1:'#fee762',bg2:'#ffb27a',ink:'#202247',accent:'#ff4f7b',card:'#fffdf5',light:'#fff'},
-    luxe:{bg1:'#0f1823',bg2:'#2b3945',ink:'#f6ead4',accent:'#caa06b',card:'#1e2935',light:'#fff7ea'},
-    catalog:{bg1:'#f8f9fd',bg2:'#e8edf7',ink:'#222b46',accent:'#6889ff',card:'#ffffff',light:'#fff'},
-    neon:{bg1:'#2f226c',bg2:'#fd5f95',ink:'#ffffff',accent:'#2ae5d2',card:'#422a87',light:'#fff'},
-    soft:{bg1:'#fbe5ef',bg2:'#ebf2ff',ink:'#35244c',accent:'#ff7a9f',card:'#ffffff',light:'#fff'},
-    price:{bg1:'#d3f5e6',bg2:'#f5fff9',ink:'#113b35',accent:'#ff7d61',card:'#ffffff',light:'#fff'}
-  };
-
-  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.roundRect(x,y,w,h,r); }
-  function fillRound(x,y,w,h,r,color,alpha=1){ ctx.save(); ctx.globalAlpha=alpha; ctx.fillStyle=color; rr(x,y,w,h,r); ctx.fill(); ctx.restore(); }
-  function strokeRound(x,y,w,h,r,color,width=2,alpha=1){ ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle=color; ctx.lineWidth=width; rr(x,y,w,h,r); ctx.stroke(); ctx.restore(); }
-  function gradientFill(x,y,w,h,c1,c2,vertical=true){ const g=vertical?ctx.createLinearGradient(x,y,x,y+h):ctx.createLinearGradient(x,y,x+w,y); g.addColorStop(0,c1); g.addColorStop(1,c2); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); }
-  function t(txt,x,y,size,color,weight='900',align='left',max){ ctx.fillStyle=color; ctx.font=`${weight} ${size}px Inter, system-ui, sans-serif`; ctx.textAlign=align; ctx.textBaseline='middle'; ctx.fillText(txt,x,y,max); }
-  function textWidth(txt,size,weight='900'){ ctx.font=`${weight} ${size}px Inter, system-ui, sans-serif`; return ctx.measureText(txt).width; }
-  function lines(txt,size,maxWidth,weight='900',maxLines=3){ ctx.font=`${weight} ${size}px Inter, system-ui, sans-serif`; const words=(txt||'').split(/\s+/).filter(Boolean); let current='', out=[]; for(const w of words){ const next=current?current+' '+w:w; if(ctx.measureText(next).width>maxWidth && current){ out.push(current); current=w; } else current=next; } if(current) out.push(current); return out.slice(0,maxLines); }
-  function strikeText(txt,x,y,size,color){ t(txt,x,y,size,color,'700'); const w=textWidth(txt,size,'700'); ctx.strokeStyle=color; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+w,y); ctx.stroke(); }
-  function drawProduct(img,x,y,w,h,r=28){ fillRound(x,y,w,h,r,'rgba(255,255,255,.55)'); ctx.save(); rr(x,y,w,h,r); ctx.clip(); if(img){ const scale=Math.max(w/img.width,h/img.height); const dw=img.width*scale, dh=img.height*scale; ctx.drawImage(img, x+(w-dw)/2, y+(h-dh)/2, dw, dh); } else { const g=ctx.createLinearGradient(x,y,x+w,y+h); g.addColorStop(0,'rgba(255,255,255,.75)'); g.addColorStop(1,'rgba(255,255,255,.28)'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); t('✦',x+w/2,y+h/2,Math.min(w,h)*.45,'rgba(255,255,255,.85)','900','center'); } ctx.restore(); }
-
-  function values(){ return {
-    category: $('category').value,
-    name: $('name').value.trim() || 'Tu producto',
-    price: $('price').value.trim() || '$0',
-    oldPrice: $('oldPrice').value.trim(),
-    discount: $('discount').value.trim(),
-    brand: $('brand').value.trim() || 'MI TIENDA',
-    headline: $('headline').value.trim() || 'OFERTA ESPECIAL',
-    subline: $('subline').value.trim() || '',
-    cta: $('cta').value.trim() || 'COMPRA AHORA',
-    format: $('format').value
-  }; }
-
-  function background(theme,w,h){ gradientFill(0,0,w,h,theme.bg1,theme.bg2,true); for(let i=0;i<7;i++){ ctx.save(); ctx.globalAlpha=.11; ctx.strokeStyle=theme.light; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(w*1.05,-30,170+i*58,0,Math.PI*2); ctx.stroke(); ctx.restore(); } }
-
-  function drawFlash(v,w,h,th){ background(th,w,h); const m=76; fillRound(m,58,280,56,22,th.accent); t('⚡ '+v.brand.toUpperCase(),m+22,86,25,'#fff','900','left',240); t(v.headline.toUpperCase(),m,175,48,th.ink,'900','left',w-2*m); const l=lines(v.name,84,w-2*m,'900',2); l.forEach((line,i)=>t(line,m,280+i*88,80,th.ink,'900','left',w-2*m)); const py=430, ph=h-820; drawProduct(state.img,m,py,w-2*m,ph,42); if(v.discount){ ctx.save(); ctx.translate(w-m-120,py+56); ctx.rotate(.12); fillRound(-95,-18,215,82,18,th.accent); t(v.discount,10,24,46,'#fff','900','center',170); ctx.restore(); } if(v.subline) t(v.subline,m,py+ph+65,28,th.ink,'700','left',w-2*m); t(v.price,m,py+ph+150,116,th.ink,'950','left',w-2*m); if(v.oldPrice){ strikeText('ANTES '+v.oldPrice,m,py+ph+214,30,th.ink); } fillRound(m,h-175,w-2*m,100,26,th.accent); t(v.cta,w/2,h-125,40,'#fff','900','center',w-2*m-40); t('Creado con PromoFlash',w/2,h-34,18,th.ink,'700','center'); }
-
-  function drawLuxe(v,w,h,th){ background(th,w,h); fillRound(52,52,w-104,h-104,34,'rgba(255,255,255,.06)'); t(v.brand.toUpperCase(),w/2,110,24,th.accent,'800','center'); t(v.headline.toUpperCase(),w/2,172,42,th.light,'800','center',w-220); const l=lines(v.name,70,w-220,'900',2); l.forEach((line,i)=>t(line,w/2,250+i*72,66,th.light,'900','center',w-220)); drawProduct(state.img,120,380,w-240,640,36); fillRound(86,1050,w-172,92,22,'rgba(255,255,255,.09)'); t(v.subline || 'Haz tu pedido hoy',w/2,1095,28,th.light,'700','center',w-220); fillRound(140,1188,w-280,138,32,th.accent); t(v.price,w/2,1240,78,'#1d1d1d','950','center'); if(v.oldPrice){ t('antes '+v.oldPrice,w/2,1292,27,'#2c2c2c','700','center'); } fillRound(86,h-180,w-172,98,24,th.light); t(v.cta,w/2,h-131,38,'#0f1823','900','center',w-240); }
-
-  function drawCatalog(v,w,h,th){ background(th,w,h); fillRound(58,58,w-116,h-116,30,'rgba(255,255,255,.88)'); fillRound(86,86,240,48,20,th.accent); t(v.brand.toUpperCase(),106,110,22,'#fff','900'); t(v.headline.toUpperCase(),86,180,38,th.ink,'900','left',w-180); t(v.subline || 'Listo para entregar',86,230,24,'#52607e','700','left',w-180); drawProduct(state.img,86,280,w-172,600,28); fillRound(86,908,240,56,20,'#eef2fb'); t(v.discount || 'PROMO',206,936,28,th.accent,'900','center'); fillRound(86,988,w-172,160,26,th.ink); t(v.price,126,1064,74,'#fff','950'); if(v.oldPrice) t('Antes '+v.oldPrice,126,1110,25,'#d3dcff','700'); fillRound(w-320,1018,194,82,20,th.accent); t(v.cta,w-223,1059,24,'#fff','900','center',160); const titleLines=lines(v.name,42,430,'900',2); titleLines.forEach((line,i)=>t(line,126,1014+i*34,34,'#fff','900','left',430)); t('Diseño generado con PromoFlash',w/2,h-38,18,'#71809d','700','center'); }
-
-  function drawNeon(v,w,h,th){ gradientFill(0,0,w,h,th.bg1,th.bg2,false); ctx.save(); ctx.globalAlpha=.18; for(let i=0;i<18;i++){ fillRound(50+i*52,80+(i%4)*260,28,28,14,'#fff'); } ctx.restore(); fillRound(78,74,w-156,h-148,42,'rgba(0,0,0,.16)'); strokeRound(78,74,w-156,h-148,42,'rgba(255,255,255,.4)',3); t(v.brand.toUpperCase(),w/2,132,24,'#dffef9','900','center'); t(v.headline.toUpperCase(),w/2,208,52,'#fff','900','center',w-220); drawProduct(state.img,124,294,w-248,620,36); fillRound(128,944,w-256,78,20,'rgba(255,255,255,.12)'); t(v.subline || 'Llévalo antes de que se agote',w/2,982,26,'#fff','700','center',w-300); fillRound(124,1054,300,150,30,'#fff'); t(v.price,274,1115,74,'#291c5f','950','center'); if(v.oldPrice) t('Antes '+v.oldPrice,274,1166,26,'#6e63a7','700','center'); fillRound(468,1068,w-592,122,28,th.accent); t(v.cta,468+(w-592)/2,1129,34,'#1f2450','900','center',w-640); if(v.discount){ fillRound(w-296,250,160,76,20,'#fff'); t(v.discount,w-216,288,36,th.bg1,'900','center'); } }
-
-  function drawSoft(v,w,h,th){ background(th,w,h); ctx.save(); ctx.globalAlpha=.22; fillRound(54,54,w-108,h-108,38,'#ffffff'); ctx.restore(); fillRound(86,94,220,46,18,th.accent); t(v.brand.toUpperCase(),108,116,21,'#fff','900'); const l=lines(v.name,64,400,'900',2); l.forEach((line,i)=>t(line,86,214+i*68,60,th.ink,'900','left',430)); t(v.headline.toUpperCase(),86,322,28,th.accent,'900','left',430); t(v.subline || 'Descubre tu nuevo favorito',86,370,26,'#6a5c78','700','left',430); drawProduct(state.img,w-470,152,380,520,28); fillRound(86,470,260,112,26,'#fff'); t(v.price,216,506,56,th.ink,'950','center'); if(v.oldPrice) t('antes '+v.oldPrice,216,548,23,'#83768f','700','center'); if(v.discount){ fillRound(86,612,180,60,18,th.accent); t(v.discount,176,642,30,'#fff','900','center'); }
-      fillRound(86,h-190,w-172,104,28,th.ink); t(v.cta,w/2,h-138,39,'#fff','900','center',w-240);
-      t('PromoFlash',w/2,h-42,18,'#6f6b80','700','center'); }
-
-  function drawPrice(v,w,h,th){ background(th,w,h); fillRound(70,70,w-140,120,28,'rgba(255,255,255,.76)'); t(v.brand.toUpperCase(),100,110,22,th.ink,'900'); t(v.headline.toUpperCase(),100,158,34,th.ink,'900','left',w-260); drawProduct(state.img,70,230,w-140,560,36); fillRound(70,824,w-140,260,34,'#fff'); const l=lines(v.name,40,w-200,'900',2); l.forEach((line,i)=>t(line,112,880+i*40,36,th.ink,'900','left',w-220)); if(v.subline) t(v.subline,112,956,22,'#66707d','700','left',w-220); fillRound(112,1008,250,58,18,'#ffe7d8'); t(v.discount || 'PROMO',237,1037,28,th.accent,'900','center'); fillRound(w-430,852,280,172,26,th.accent); t(v.price,w-290,914,68,'#fff','950','center'); if(v.oldPrice) t('Antes '+v.oldPrice,w-290,962,24,'#ffe7df','700','center'); fillRound(112,h-168,w-224,92,22,th.ink); t(v.cta,w/2,h-122,34,'#fff','900','center'); }
-
-  function render(download=false){ const v=values(); state.category=v.category; const [W,H]=formats[v.format]; const scale=download?1:0.5; canvas.width=W*scale; canvas.height=H*scale; ctx.setTransform(scale,0,0,scale,0,0); ctx.clearRect(0,0,W,H); const th=templateThemes[state.template]; switch(state.template){ case 'flash': drawFlash(v,W,H,th); break; case 'luxe': drawLuxe(v,W,H,th); break; case 'catalog': drawCatalog(v,W,H,th); break; case 'neon': drawNeon(v,W,H,th); break; case 'soft': drawSoft(v,W,H,th); break; case 'price': drawPrice(v,W,H,th); break; default: drawFlash(v,W,H,th); } }
-
-  function setTemplate(name){ state.template=name; document.querySelectorAll('.template').forEach(btn=>btn.classList.toggle('active',btn.dataset.template===name)); render(false); }
-  function setOffer(name){ state.offer=name; document.querySelectorAll('#offerTypes .chip').forEach(btn=>btn.classList.toggle('active',btn.dataset.offer===name)); }
-  function applyExample(cat){ const ex=examples[cat]; if(!ex) return; $('name').value=ex.name; $('price').value=ex.price; $('oldPrice').value=ex.oldPrice; $('discount').value=ex.discount; $('brand').value=ex.brand; $('headline').value=ex.headline; $('subline').value=ex.subline; $('cta').value=ex.cta; render(false); }
-  function generateHook(){ const cat=$('category').value; const offer=state.offer; const bank=((hookBank[cat]||{})[offer]||[]); const pick=bank[Math.floor(Math.random()*bank.length)] || ['OFERTA ESPECIAL','Tu producto merece destacar','¡COMPRA AHORA!']; $('headline').value=pick[0]; $('subline').value=pick[1]; $('cta').value=pick[2]; render(false); }
-
-  ['name','price','oldPrice','discount','brand','headline','subline','cta','format'].forEach(id=>$(id).addEventListener('input',()=>render(false)));
-  $('category').addEventListener('change',e=>{ applyExample(e.target.value); });
-  document.querySelectorAll('.template').forEach(btn=>btn.addEventListener('click',()=>setTemplate(btn.dataset.template)));
-  document.querySelectorAll('#offerTypes .chip').forEach(btn=>btn.addEventListener('click',()=>setOffer(btn.dataset.offer)));
-  $('generateHook').addEventListener('click',generateHook);
-  $('loadExample').addEventListener('click',()=>applyExample($('category').value));
-  $('randomTemplate').addEventListener('click',()=>{ const all=['flash','luxe','catalog','neon','soft','price']; setTemplate(all[(all.indexOf(state.template)+1)%all.length]); });
-  $('photo').addEventListener('change',e=>{
-    const file=e.target.files && e.target.files[0]; $('error').textContent='';
-    if(!file){ state.img=null; render(false); return; }
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size>12*1024*1024){ $('error').textContent='Usa JPG, PNG o WebP de hasta 12 MB.'; e.target.value=''; return; }
-    const url=URL.createObjectURL(file); const image=new Image(); image.onload=()=>{ state.img=image; URL.revokeObjectURL(url); render(false); }; image.onerror=()=>{ URL.revokeObjectURL(url); $('error').textContent='No se pudo abrir la imagen.'; }; image.src=url;
-  });
-  $('download').addEventListener('click',()=>{
-    render(true);
-    canvas.toBlob(blob=>{ if(!blob){ render(false); return; } const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='promoflash-'+state.template+'-'+$('format').value+'.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),4000); render(false); if(typeof window.plausible==='function') window.plausible('promo_download',{props:{template:state.template,format:$('format').value,category:$('category').value}}); },'image/png');
-  });
-
-  applyExample('beauty');
-  setOffer('sale');
-  setTemplate('flash');
-})();
-</script>
+<script src="config.js"></script>
+<script src="editor.js" defer></script>
 </body>
 </html>
