@@ -4,6 +4,11 @@ from pathlib import Path
 import json, os, subprocess, time
 from playwright.sync_api import sync_playwright, expect
 ROOT=Path(__file__).resolve().parents[1]
+# Prevent auth storage and logout from affecting other microapps on GitHub Pages.
+ACCOUNT_JS=(ROOT/'cuenta.js').read_text(encoding='utf-8')
+assert "storageKey:'sequeidaulabs-promoflash-auth-v1'" in ACCOUNT_JS
+assert "client.auth.signOut({scope:'local'})" in ACCOUNT_JS
+
 OUT=ROOT/'test-results'/'recovery'
 OUT.mkdir(parents=True,exist_ok=True)
 server=subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
