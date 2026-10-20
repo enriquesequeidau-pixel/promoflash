@@ -39,7 +39,11 @@ try:
    page.wait_for_timeout(400)
    assert len(pixels)==count,'Revocation must stop loading Meta on later page visits'
    assert page.evaluate('localStorage.getItem("promoflash_analytics_choice")')=='no'
-   assert not page.evaluate('document.documentElement.scrollWidth>window.innerWidth+1')
+   if page.evaluate('document.documentElement.scrollWidth>window.innerWidth+1'):
+    diagnostics=page.evaluate("""() => ({screen: innerWidth, scroll:document.documentElement.scrollWidth,
+      offenders:[...document.querySelectorAll('*')].filter(e=>{const r=e.getBoundingClientRect();return r.right>innerWidth+3||r.left<-3})
+        .slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:e.className?.toString().slice(0,90),right:Math.round(e.getBoundingClientRect().right)}))})""")
+    raise AssertionError(f'Mobile horizontal overflow: {diagnostics}')
    context.close()
    print(f'PASS: width={width} default off / consent on / revoke off / no mobile overflow')
   browser.close()
