@@ -3,7 +3,7 @@ const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];
 const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v});
-const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sequeidaulabs-promoflash-auth-v1'}});
 function message(id,value,ok=false){$(id).textContent=value;$(id).className='status '+(ok?'okay':'bad')}
 function readable(e){return e?.message==='Invalid login credentials'?'Correo o contraseña incorrectos.':(e?.message||'Error desconocido. Intenta nuevamente.')}
 async function render(){const {data:{user},error}=await client.auth.getUser();if(error||!user){$('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');return;}$('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');$('userEmail').textContent=user.email||'Cuenta activa';$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)}
@@ -63,7 +63,7 @@ client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')queueMicr
 $('startPro').addEventListener('click',startCheckout);
 $('signIn').addEventListener('click',()=>auth('signin'));
 $('signUp').addEventListener('click',()=>auth('signup'));
-$('signOut').addEventListener('click',async()=>{setBusy(true);await client.auth.signOut();setBusy(false);await render()});
+$('signOut').addEventListener('click',async()=>{setBusy(true);await client.auth.signOut({scope:'local'});setBusy(false);await render()});
 $('refreshPro').addEventListener('click',async()=>{const{data:{user}}=await client.auth.getUser();if(user)$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)});
 client.auth.onAuthStateChange(()=>{queueMicrotask(()=>render())});
 render();
