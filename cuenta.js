@@ -24,6 +24,34 @@ async function startCheckout(){
  }catch(e){message('accountNotice',e.message||'No se pudo iniciar el pago.');$('startPro').disabled=false;}
 }
 async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<8){message('notice','La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href}}):await client.auth.signInWithPassword({email,password});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{setBusy(false)}}
+async function requestPasswordReset(){
+ const email=$('email').value.trim()||'enrique.sequeidau@mayor.cl';
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){message('notice','Escribe un correo válido.');return;}
+ const btn=$('resetPassword');btn.disabled=true;
+ try{
+  const redirectTo=new URL('cuenta.html',location.href).href;
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error)throw error;
+  message('notice','Si existe una cuenta con ese correo, recibirás un enlace para recuperar el acceso. Revisa también spam.',true);
+ }catch(e){message('notice','No se pudo enviar el enlace. Verifica el correo y vuelve a intentar.');}
+ finally{btn.disabled=false;}
+}
+async function updateRecoveredPassword(){
+ const password=$('newPassword').value;
+ if(password.length<8){message('recoveryNotice','La contraseña debe tener al menos 8 caracteres.');return;}
+ const btn=$('saveNewPassword');btn.disabled=true;
+ try{
+  const {error}=await client.auth.updateUser({password});
+  if(error)throw error;
+  $('newPassword').value='';$('recoveryPanel').classList.add('hidden');
+  message('notice','Contraseña cambiada correctamente.',true);await render();
+ }catch(e){message('recoveryNotice','No se pudo cambiar. Solicita un enlace nuevo.');}
+ finally{btn.disabled=false;}
+}
+$('resetPassword').addEventListener('click',requestPasswordReset);
+$('saveNewPassword').addEventListener('click',updateRecoveredPassword);
+client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')queueMicrotask(()=>$('recoveryPanel').classList.remove('hidden'));});
+
 $('startPro').addEventListener('click',startCheckout);
 $('signIn').addEventListener('click',()=>auth('signin'));
 $('signUp').addEventListener('click',()=>auth('signup'));
