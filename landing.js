@@ -7,7 +7,7 @@ const embeds=window.PROMOFLASH_DEMOS||[];
 for(const img of document.querySelectorAll('img[data-demo]')){const i=Number(img.dataset.demo)-1;if(embeds[i])img.src=embeds[i];}
 function event(name,props={}){try{
 if(localStorage.getItem('promoflash_analytics_choice')==='yes'&&name==='landing_view'){
-fetch(cfg.supabaseUrl+'/functions/v1/promoflash-events',{method:'POST',headers:{'Content-Type':'application/json','apikey':cfg.supabaseAnonKey},body:JSON.stringify({event_name:name,utm_campaign:carry.get('utm_campaign')||'',utm_source:carry.get('utm_source')||'',utm_medium:carry.get('utm_medium')||''}),keepalive:true}).catch(()=>{});
+fetch((cfg.factoryApiUrl||cfg.supabaseUrl)+'/functions/v1/promoflash-events',{method:'POST',headers:{'Content-Type':'application/json','apikey':(cfg.factoryApiKey||cfg.supabaseAnonKey)},body:JSON.stringify({event_name:name,utm_campaign:carry.get('utm_campaign')||'',utm_source:carry.get('utm_source')||'',utm_medium:carry.get('utm_medium')||''}),keepalive:true}).catch(()=>{});
 }
 if(typeof window.plausible==='function')window.plausible(name,{props});if(typeof window.gtag==='function')window.gtag('event',name,props);if(typeof window.fbq==='function')window.fbq('trackCustom',name,props);}catch(e){}}
 for(const a of document.querySelectorAll('a[data-event]'))a.addEventListener('click',()=>event(a.dataset.event,{utm_campaign:carry.get('utm_campaign')||''}));
