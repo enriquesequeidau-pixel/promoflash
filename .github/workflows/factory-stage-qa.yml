@@ -1,7 +1,7 @@
 name: PromoFlash → Factory staged QA
 on:
   push:
-    branches: [factory-stage-20261019]
+    branches: [factory-stage-20261019, main]
   workflow_dispatch:
 permissions:
   contents: read
