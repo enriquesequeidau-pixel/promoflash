@@ -16,7 +16,8 @@ try:
     time.sleep(1.2)
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True)
-        for width in (375,1280):
+        for width, base_url in ((375,'http://127.0.0.1:8765'),(1280,'http://127.0.0.1:8765'),(375,'https://promoflash.sequeidaulabs.com'),(1280,'https://promoflash.sequeidaulabs.com')):
+            variant='public' if base_url.startswith('https') else 'local'
             ctx=browser.new_context(viewport={'width':width,'height':860},device_scale_factor=1)
             page=ctx.new_page()
             js_errors=[]
@@ -30,7 +31,7 @@ try:
                     posts.append({'method':request.method,'url':request.url,'body':request.post_data})
                     route.fulfill(status=200,content_type='application/json',headers={'Access-Control-Allow-Origin':'*'},body='{}')
             page.route('**/auth/v1/recover*',fake_recovery)
-            response=page.goto('http://127.0.0.1:8765/cuenta.html',wait_until='networkidle')
+            response=page.goto(f'{base_url}/cuenta.html',wait_until='domcontentloaded')
             assert response and response.status==200
             btn=page.locator('#resetPassword')
             expect(btn).to_be_visible()
@@ -39,7 +40,7 @@ try:
             assert bounds is not None and bounds['height']<=46, f'Button too large: {bounds}'
             assert page.locator('#resetPassword').evaluate('(e)=>parseFloat(getComputedStyle(e).fontSize)')<=14
             assert not page.evaluate('document.documentElement.scrollWidth>window.innerWidth+1')
-            page.screenshot(path=str(OUT/f'initial-{width}.png'),full_page=True)
+            page.screenshot(path=str(OUT/f'initial-{variant}-{width}.png'),full_page=True)
             btn.click()
             expect(page.locator('#notice')).to_contain_text('Escribe tu correo electrónico')
             expect(page.locator('#email')).to_be_focused()
@@ -50,11 +51,11 @@ try:
             assert 'qa-person@example.com' in (posts[0]['body'] or '')
             assert 'nrwbnjjaqilgreqhpcov.supabase.co' in posts[0]['url']
             redirect=parse_qs(urlparse(posts[0]['url']).query).get('redirect_to',[None])[0]
-            assert redirect=='http://127.0.0.1:8765/cuenta.html',f'Recovery escaped PromoFlash: {redirect}'
+            assert redirect==f'{base_url}/cuenta.html',f'Recovery escaped PromoFlash: {redirect}'
             expect(btn).to_be_enabled()
             assert not js_errors,js_errors
-            page.screenshot(path=str(OUT/f'success-{width}.png'),full_page=True)
-            print(json.dumps({'viewport':width,'result':'PASS','font_px':12.5,'requests_mocked':len(posts)}))
+            page.screenshot(path=str(OUT/f'success-{variant}-{width}.png'),full_page=True)
+            print(json.dumps({'viewport':width,'variant':variant,'result':'PASS','font_px':12.5,'requests_mocked':len(posts)}))
             ctx.close()
         browser.close()
 finally:
