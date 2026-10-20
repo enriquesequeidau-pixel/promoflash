@@ -40,9 +40,10 @@ try:
    assert len(pixels)==count,'Revocation must stop loading Meta on later page visits'
    assert page.evaluate('localStorage.getItem("promoflash_analytics_choice")')=='no'
    # CSS clips decorative rotated posters; verify whether the viewport can actually pan.
-   page.evaluate('window.scrollTo({left:400,top:0,behavior:"instant"})')
+   page.mouse.move(140,300)
+   page.mouse.wheel(400,0)
    page.wait_for_timeout(100)
-   assert page.evaluate('window.scrollX')==0,'Landing unexpectedly permits horizontal panning'
+   assert page.evaluate('window.scrollX')==0,'Landing scrolls horizontally when customer swipes'
    context.close()
    print(f'PASS: width={width} default off / consent on / revoke off / no mobile overflow')
   browser.close()
