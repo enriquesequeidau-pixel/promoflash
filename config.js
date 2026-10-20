@@ -1,7 +1,10 @@
 // Solo valores publicos. Nunca colocar service_role ni claves privadas.
 window.PROMOFLASH_CONFIG = {
-  supabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co',
-  supabaseAnonKey: 'sb_publishable_L8vt_f3MzyLvur4AXpfW4w__NTlLsle',
+  supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co',
+  // Acceso de cuentas PromoFlash permanece en el proyecto anterior mientras se valida migracion Auth.
+  accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co',
+  accountSupabaseAnonKey: 'sb_publishable_L8vt_f3MzyLvur4AXpfW4w__NTlLsle',
+  supabaseAnonKey: 'sb_publishable_7aOw4W695bp3CIMYTO9E6Q_5VChQ6so',
   ga4MeasurementId: '',
   metaPixelId: '2330854091059395',
   plausibleDomain: '',
