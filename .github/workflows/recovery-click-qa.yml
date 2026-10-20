@@ -1,0 +1,35 @@
+name: PromoFlash Recovery Click QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cuenta.html'
+      - 'cuenta.js'
+      - 'config.js'
+      - 'tests/recovery-browser.py'
+      - '.github/workflows/recovery-click-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  click-and-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium for real browser interaction
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Exercise compact recovery link, status and mocked email in Chromium
+        run: python tests/recovery-browser.py
+      - name: Save mobile and desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promoflash-recovery-visuals
+          path: test-results/recovery/
+          if-no-files-found: warn
