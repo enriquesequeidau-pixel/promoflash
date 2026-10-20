@@ -3,7 +3,7 @@ const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];
 const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v});
-const client=createClient(config.supabaseUrl,config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 function message(id,value,ok=false){$(id).textContent=value;$(id).className='status '+(ok?'okay':'bad')}
 function readable(e){return e?.message==='Invalid login credentials'?'Correo o contraseña incorrectos.':(e?.message||'Error desconocido. Intenta nuevamente.')}
 async function render(){const {data:{user},error}=await client.auth.getUser();if(error||!user){$('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');return;}$('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');$('userEmail').textContent=user.email||'Cuenta activa';$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)}
@@ -14,8 +14,8 @@ async function startCheckout(){
  if(!session){message('accountNotice','Inicia sesión para continuar.');return;}
  $('startPro').disabled=true;
  try {
-  const response=await fetch(config.supabaseUrl+'/functions/v1/promoflash-checkout',{
-   method:'POST', headers:{'Authorization':'Bearer '+session.access_token,'apikey':config.supabaseAnonKey,'Content-Type':'application/json'}, body:JSON.stringify({})});
+  const response=await fetch((config.accountSupabaseUrl||config.supabaseUrl)+'/functions/v1/promoflash-checkout',{
+   method:'POST', headers:{'Authorization':'Bearer '+session.access_token,'apikey':config.accountSupabaseAnonKey||config.supabaseAnonKey,'Content-Type':'application/json'}, body:JSON.stringify({})});
   const data=await response.json();
   if(!response.ok||!data.checkout_url)throw new Error(data.error||'Checkout no disponible.');
   const url=new URL(data.checkout_url);
@@ -32,4 +32,4 @@ $('refreshPro').addEventListener('click',async()=>{const{data:{user}}=await clie
 client.auth.onAuthStateChange(()=>{queueMicrotask(()=>render())});
 render();
 
-$('proGenerate').addEventListener('click',async()=>{const out=$('proOutput');out.textContent='Generando…';try{const{data:{session}}=await client.auth.getSession();if(!session)throw Error('Inicia sesión');const response=await fetch(config.supabaseUrl+'/functions/v1/promoflash-pro-studio',{method:'POST',headers:{'Authorization':'Bearer '+session.access_token,'apikey':config.supabaseAnonKey,'Content-Type':'application/json'},body:JSON.stringify({shop:$('proShop').value,product:$('proProduct').value,voice:$('proVoice').value})});const d=await response.json();if(!response.ok)throw Error(d.error||'No disponible');out.replaceChildren();const ul=document.createElement('ul');for(const line of d.headlines||[]){const li=document.createElement('li');li.textContent=line;ul.appendChild(li)}out.append(ul)}catch(e){out.textContent=e.message||'Error'}});
+$('proGenerate').addEventListener('click',async()=>{const out=$('proOutput');out.textContent='Generando…';try{const{data:{session}}=await client.auth.getSession();if(!session)throw Error('Inicia sesión');const response=await fetch((config.accountSupabaseUrl||config.supabaseUrl)+'/functions/v1/promoflash-pro-studio',{method:'POST',headers:{'Authorization':'Bearer '+session.access_token,'apikey':config.accountSupabaseAnonKey||config.supabaseAnonKey,'Content-Type':'application/json'},body:JSON.stringify({shop:$('proShop').value,product:$('proProduct').value,voice:$('proVoice').value})});const d=await response.json();if(!response.ok)throw Error(d.error||'No disponible');out.replaceChildren();const ul=document.createElement('ul');for(const line of d.headlines||[]){const li=document.createElement('li');li.textContent=line;ul.appendChild(li)}out.append(ul)}catch(e){out.textContent=e.message||'Error'}});
