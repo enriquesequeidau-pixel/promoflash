@@ -25,16 +25,24 @@ async function startCheckout(){
 }
 async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<8){message('notice','La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href}}):await client.auth.signInWithPassword({email,password});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{setBusy(false)}}
 async function requestPasswordReset(){
- const email=$('email').value.trim()||'enrique.sequeidau@mayor.cl';
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){message('notice','Escribe un correo válido.');return;}
+ const email=$('email').value.trim();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+  message('notice','Escribe tu correo electrónico arriba para recibir el enlace.');
+  $('email').focus();return;
+ }
  const btn=$('resetPassword');btn.disabled=true;
+ const originalLabel=btn.textContent;
+ btn.textContent='Enviando enlace…';
+ message('notice','Solicitando el correo de recuperación…',true);
  try{
   const redirectTo=new URL('cuenta.html',location.href).href;
   const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo});
   if(error)throw error;
-  message('notice','Si existe una cuenta con ese correo, recibirás un enlace para recuperar el acceso. Revisa también spam.',true);
- }catch(e){message('notice','No se pudo enviar el enlace. Verifica el correo y vuelve a intentar.');}
- finally{btn.disabled=false;}
+  message('notice','Solicitud enviada. Si existe una cuenta con ese correo, recibirás un enlace. Revisa tu bandeja y spam.',true);
+ }catch(e){
+  const limited=e?.status===429||String(e?.message||'').toLowerCase().includes('rate limit');
+  message('notice',limited?'Hay demasiados intentos. Espera unos minutos y vuelve a solicitar el enlace.':'No se pudo solicitar el correo. Intenta de nuevo en unos minutos.');
+ }finally{btn.disabled=false;btn.textContent=originalLabel;}
 }
 async function updateRecoveredPassword(){
  const password=$('newPassword').value;
