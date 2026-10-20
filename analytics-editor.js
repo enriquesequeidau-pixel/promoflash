@@ -8,7 +8,7 @@ function start(){if(cfg.ga4MeasurementId){const s=document.createElement('script
 function firstPartyEvent(name,detail){if(localStorage.getItem('promoflash_analytics_choice')!=='yes')return;
 const allowed=['editor_view','promo_generate','promo_download','promo_download_all','photo_uploaded'];if(!allowed.includes(name))return;
 const payload={event_name:name,utm_campaign:String(detail.utm_campaign||'').slice(0,100),utm_medium:String(detail.utm_medium||'').slice(0,100),utm_source:String(detail.utm_source||'').slice(0,100),category:String(detail.category||'').slice(0,30)};
-fetch(cfg.supabaseUrl+'/functions/v1/promoflash-events',{method:'POST',headers:{'Content-Type':'application/json','apikey':cfg.supabaseAnonKey},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});
+fetch((cfg.factoryApiUrl||cfg.supabaseUrl)+'/functions/v1/promoflash-events',{method:'POST',headers:{'Content-Type':'application/json','apikey':(cfg.factoryApiKey||cfg.supabaseAnonKey)},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});
 }
 window.PROMOFLASH_TRACK=(name,props={})=>{let detail=props;try{detail={...JSON.parse(sessionStorage.getItem('pf_utm')||'{}'),...props}}catch(e){}try{firstPartyEvent(name,detail);if(window.gtag)window.gtag('event',name,detail);if(window.fbq)window.fbq('trackCustom',name,detail);if(window.plausible)window.plausible(name,{props:detail})}catch(e){}};
 let choice=null;try{choice=localStorage.getItem('promoflash_analytics_choice')}catch(e){}
