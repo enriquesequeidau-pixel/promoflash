@@ -7,3 +7,6 @@
 
 /* Keep rotated example posters within the narrow mobile viewport. */
 @media(max-width:600px){.hero-display{overflow:clip;min-width:0}.hero-display .mockup-stack{max-width:100%;min-width:0}}
+
+/* Prevent horizontal document scrolling from wide carousel strips / rotated artwork. */
+html,body{overflow-x:clip}
