@@ -1,5 +1,8 @@
 // Solo valores publicos. Nunca colocar service_role ni claves privadas.
 window.PROMOFLASH_CONFIG = {
+  // Rutas gratuitas transferidas al Supabase compartido; Auth y Pro permanecen en el proyecto original hasta el corte final.
+  factoryApiUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co',
+  factoryApiKey: 'sb_publishable_7aOw4W695bp3CIMYTO9E6Q_5VChQ6so',
   supabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co',
   supabaseAnonKey: 'sb_publishable_L8vt_f3MzyLvur4AXpfW4w__NTlLsle',
   ga4MeasurementId: '',
