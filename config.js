@@ -16,14 +16,7 @@ window.PROMOFLASH_CONFIG = {
   contactEmail: 'soporte@sequeidaulabs.com'
 };
 
-// Analítica habilitada por defecto.
-// Mantiene intactos la landing, el editor, formularios, estilos y lógica de negocio.
-try {
-  localStorage.setItem('promoflash_analytics_choice', 'yes');
-} catch (e) {}
-
-// Oculta el control antiguo de opt-in/opt-out que todavía crean los scripts existentes.
-document.addEventListener('DOMContentLoaded', () => {
-  const control = document.getElementById('analyticsPreference');
-  if (control) control.remove();
-});
+// El usuario elige explícitamente la medición opcional desde el pie de página.
+// Sin preferencia guardada, Meta Pixel / GA4 / Plausible y eventos de analítica
+// permanecen desactivados. El editor gratuito y el formulario siguen funcionando.
+// No borrar ni sobrescribir una preferencia previamente elegida.
