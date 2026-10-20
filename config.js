@@ -13,7 +13,7 @@ window.PROMOFLASH_CONFIG = {
   proPriceCLP: 4990,
   proBillingInterval: 'month',
   proPaymentsEnabled: false, // Activar solo despues de implementar y verificar la entrega de Pro
-  contactEmail: 'enrique.sequeidau@mayor.cl'
+  contactEmail: 'soporte@sequeidaulabs.com'
 };
 
 // Analítica habilitada por defecto.
