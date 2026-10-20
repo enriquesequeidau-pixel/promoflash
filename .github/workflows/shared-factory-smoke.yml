@@ -1,0 +1,37 @@
+name: PromoFlash shared-factory live smoke
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify syntax and safe split of users vs analytics
+        run: |
+          node --check config.js
+          node --check landing.js
+          node --check cuenta.js
+          grep -q "supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" config.js
+          grep -q "accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co'" config.js
+          grep -q 'proPaymentsEnabled: false' config.js
+          grep -q 'config.accountSupabaseUrl||config.supabaseUrl' cuenta.js
+      - name: GitHub Pages HTTP routes use shared factory
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://enriquesequeidau-pixel.github.io/promoflash'
+          for FILE in index.html editor.html cuenta.html config.js cuenta.js landing.js; do
+            HTTP=$(curl --fail --silent --show-error -L --retry 4 --retry-delay 4 --max-time 45 -o "/tmp/$FILE" -w '%{http_code}' "$BASE/$FILE?factory_release=20261020")
+            echo "$FILE -> HTTP $HTTP"
+            test "$HTTP" = 200
+          done
+          grep -q "supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" /tmp/config.js
+          grep -q "accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co'" /tmp/config.js
+          grep -q 'proPaymentsEnabled: false' /tmp/config.js
+          grep -q 'config.accountSupabaseUrl||config.supabaseUrl' /tmp/cuenta.js
+          echo 'PASS: telemetry on factory; account remains original; checkout off'
