@@ -1,0 +1,47 @@
+name: PromoFlash → Factory staged QA
+on:
+  push:
+    branches: [factory-stage-20261019]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-cutover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Check staged client code and separated Auth
+        run: |
+          node --check config.js
+          node --check landing.js
+          node --check analytics-editor.js
+          node - <<'JS'
+          const fs=require('fs'),a=require('node:assert/strict');
+          const conf=fs.readFileSync('config.js','utf8');
+          const index=fs.readFileSync('index.html','utf8');
+          const landing=fs.readFileSync('landing.js','utf8');
+          const analytics=fs.readFileSync('analytics-editor.js','utf8');
+          const account=fs.readFileSync('cuenta.js','utf8');
+          a.match(conf,/factoryApiUrl: 'https:\/\/nrwbnjjaqilgreqhpcov.supabase.co'/);
+          a.match(conf,/supabaseUrl: 'https:\/\/fqtvbbrquzcvougusfww.supabase.co'/);
+          a.ok(index.includes("cfg.factoryApiUrl||cfg.supabaseUrl"));
+          a.ok(index.includes("cfg.factoryApiKey||cfg.supabaseAnonKey"));
+          a.ok(landing.includes("cfg.factoryApiUrl||cfg.supabaseUrl"));
+          a.ok(analytics.includes("cfg.factoryApiUrl||cfg.supabaseUrl"));
+          a.ok(account.includes("config.supabaseUrl")); // account STILL uses original project
+          a.ok(!account.includes("factoryApiUrl"));
+          a.match(conf,/proPaymentsEnabled: false/);
+          console.log('PASS: free API moved to factory; old auth unchanged; payments disabled');
+          JS
+      - name: Test live factory endpoints without creating real customer records
+        run: |
+          set -euo pipefail
+          ROOT=https://nrwbnjjaqilgreqhpcov.supabase.co/functions/v1
+          CODE=$(curl --silent --show-error --max-time 35 -o /tmp/body -w '%{http_code}' -X POST -H 'origin: https://enriquesequeidau-pixel.github.io' -H 'content-type: application/json' -d '{"consent":false}' "$ROOT/promoflash-lead")
+          test "$CODE" = '400' || { echo "Lead unexpected $CODE"; exit 1; }
+          CODE=$(curl --silent --show-error --max-time 35 -o /tmp/body -w '%{http_code}' -X POST -d '{}' "$ROOT/promoflash-checkout")
+          test "$CODE" = '503' || { echo "CRITICAL checkout flag $CODE"; exit 1; }
+          echo 'PASS: auth+payments unchanged; new API available and gated'
