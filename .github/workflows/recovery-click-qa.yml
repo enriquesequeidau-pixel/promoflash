@@ -12,6 +12,15 @@ on:
       - 'tests/analytics-consent-browser.py'
       - 'tests/recovery-browser.py'
       - '.github/workflows/recovery-click-qa.yml'
+  pull_request:
+    paths:
+      - 'config.js'
+      - 'index.html'
+      - 'analytics-editor.js'
+      - 'privacidad.html'
+      - 'tests/analytics-consent-browser.py'
+      - 'tests/recovery-browser.py'
+      - '.github/workflows/recovery-click-qa.yml'
   workflow_dispatch:
 permissions:
   contents: read
