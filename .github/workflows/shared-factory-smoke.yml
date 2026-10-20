@@ -22,11 +22,11 @@ jobs:
           grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" config.js
           grep -q 'proPaymentsEnabled: false' config.js
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' cuenta.js
-      - name: GitHub Pages HTTP routes use shared factory
+      - name: Custom HTTPS domain routes use shared factory
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://enriquesequeidau-pixel.github.io/promoflash'
+          BASE='https://promoflash.sequeidaulabs.com'
           for FILE in index.html editor.html cuenta.html config.js cuenta.js landing.js; do
             HTTP=$(curl --fail --silent --show-error -L --retry 4 --retry-delay 4 --max-time 45 -o "/tmp/$FILE" -w '%{http_code}' "$BASE/$FILE?factory_release=20261020")
             echo "$FILE -> HTTP $HTTP"
