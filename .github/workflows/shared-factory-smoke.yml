@@ -36,4 +36,9 @@ jobs:
           grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" /tmp/config.js
           grep -q 'proPaymentsEnabled: false' /tmp/config.js
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' /tmp/cuenta.js
+          grep -q 'id="resetPassword"' /tmp/cuenta.html
+          grep -q 'id="recoveryPanel"' /tmp/cuenta.html
+          grep -q 'resetPasswordForEmail' /tmp/cuenta.js
+          grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" /tmp/config.js
+          echo 'PASS: botón de recuperación y código publicados efectivamente en GitHub Pages'
           echo 'PASS: analytics and auth centralized, checkout off'
