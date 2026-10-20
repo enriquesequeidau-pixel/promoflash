@@ -1,3 +1,4 @@
+from urllib.parse import urlparse, parse_qs
 """Real Chromium QA for PromoFlash password reset interaction. Never sends a real email."""
 from pathlib import Path
 import json, os, subprocess, time
@@ -43,6 +44,8 @@ try:
             assert len(posts)==1 and posts[0]['method']=='POST',posts
             assert 'qa-person@example.com' in (posts[0]['body'] or '')
             assert 'nrwbnjjaqilgreqhpcov.supabase.co' in posts[0]['url']
+            redirect=parse_qs(urlparse(posts[0]['url']).query).get('redirect_to',[None])[0]
+            assert redirect=='http://127.0.0.1:8765/cuenta.html',f'Recovery escaped PromoFlash: {redirect}'
             expect(btn).to_be_enabled()
             assert not js_errors,js_errors
             page.screenshot(path=str(OUT/f'success-{width}.png'),full_page=True)
