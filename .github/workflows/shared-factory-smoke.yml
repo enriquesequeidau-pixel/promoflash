@@ -16,8 +16,10 @@ jobs:
           node --check config.js
           node --check landing.js
           node --check cuenta.js
+          grep -q 'resetPasswordForEmail' cuenta.js
+          grep -q 'id="resetPassword"' cuenta.html
           grep -q "supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" config.js
-          grep -q "accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co'" config.js
+          grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" config.js
           grep -q 'proPaymentsEnabled: false' config.js
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' cuenta.js
       - name: GitHub Pages HTTP routes use shared factory
@@ -31,7 +33,7 @@ jobs:
             test "$HTTP" = 200
           done
           grep -q "supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" /tmp/config.js
-          grep -q "accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co'" /tmp/config.js
+          grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" /tmp/config.js
           grep -q 'proPaymentsEnabled: false' /tmp/config.js
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' /tmp/cuenta.js
-          echo 'PASS: telemetry on factory; account remains original; checkout off'
+          echo 'PASS: analytics and auth centralized, checkout off'
