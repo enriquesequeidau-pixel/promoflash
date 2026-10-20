@@ -6,6 +6,10 @@ on:
       - 'cuenta.html'
       - 'cuenta.js'
       - 'config.js'
+      - 'index.html'
+      - 'analytics-editor.js'
+      - 'privacidad.html'
+      - 'tests/analytics-consent-browser.py'
       - 'tests/recovery-browser.py'
       - '.github/workflows/recovery-click-qa.yml'
   workflow_dispatch:
@@ -26,6 +30,8 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Exercise compact recovery link, status and mocked email in Chromium
         run: python tests/recovery-browser.py
+      - name: Verify optional analytics consent and revocation
+        run: python tests/analytics-consent-browser.py
       - name: Save mobile and desktop screenshots
         if: always()
         uses: actions/upload-artifact@v4
