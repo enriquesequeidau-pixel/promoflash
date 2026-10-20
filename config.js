@@ -1,9 +1,10 @@
 // Solo valores publicos. Nunca colocar service_role ni claves privadas.
 window.PROMOFLASH_CONFIG = {
   supabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co',
-  // Acceso de cuentas PromoFlash permanece en el proyecto anterior mientras se valida migracion Auth.
-  accountSupabaseUrl: 'https://fqtvbbrquzcvougusfww.supabase.co',
-  accountSupabaseAnonKey: 'sb_publishable_L8vt_f3MzyLvur4AXpfW4w__NTlLsle',
+  // Todas las cuentas nuevas y existentes usan la identidad central de CotizaFlow.
+  // Los pagos Pro permanecen desactivados hasta verificar flujos reales de compra.
+  accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co',
+  accountSupabaseAnonKey: 'sb_publishable_7aOw4W695bp3CIMYTO9E6Q_5VChQ6so',
   supabaseAnonKey: 'sb_publishable_7aOw4W695bp3CIMYTO9E6Q_5VChQ6so',
   ga4MeasurementId: '',
   metaPixelId: '2330854091059395',
