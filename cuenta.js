@@ -23,7 +23,7 @@ async function startCheckout(){
   window.location.assign(url.href);
  }catch(e){message('accountNotice',e.message||'No se pudo iniciar el pago.');$('startPro').disabled=false;}
 }
-async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<8){message('notice','La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href}}):await client.auth.signInWithPassword({email,password});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{setBusy(false)}}
+async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<(action==='signup'?10:8)){message('notice',action==='signup'?'Para crear una cuenta, usa una contraseña de al menos 10 caracteres.':'La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href}}):await client.auth.signInWithPassword({email,password});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{setBusy(false)}}
 async function requestPasswordReset(){
  const email=$('email').value.trim();
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -46,7 +46,7 @@ async function requestPasswordReset(){
 }
 async function updateRecoveredPassword(){
  const password=$('newPassword').value;
- if(password.length<8){message('recoveryNotice','La contraseña debe tener al menos 8 caracteres.');return;}
+ if(password.length<10){message('recoveryNotice','La nueva contraseña debe tener al menos 10 caracteres.');return;}
  const btn=$('saveNewPassword');btn.disabled=true;
  try{
   const {error}=await client.auth.updateUser({password});
