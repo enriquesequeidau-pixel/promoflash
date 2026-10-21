@@ -9,8 +9,11 @@ window.PROMOFLASH_CONFIG = {
   ga4MeasurementId: '',
   metaPixelId: '2330854091059395',
   plausibleDomain: '',
-  proCheckoutUrl: 'https://mpago.la/2iWVYnc',
-  proPriceCLP: 4990,
+  // PromoFlash sells in Mexico. The former Chilean checkout is not valid for this market.
+  proCheckoutUrl: '',
+  proTargetCountry: 'MX',
+  proTargetCurrency: 'MXN',
+  proPriceCLP: null,
   proBillingInterval: 'month',
   proPaymentsEnabled: false, // Activar solo despues de implementar y verificar la entrega de Pro
   contactEmail: 'soporte@sequeidaulabs.com'
