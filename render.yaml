@@ -1,0 +1,32 @@
+# Safe, non-live Blueprint staging for the EXISTING promoflash-comercial-preview static site.
+# This file does NOT change GitHub Pages, Meta Pixel, DNS, or live payments.
+# Do NOT create another Render service. Preview and verify scripts, tracking,
+# lead submission and recovery before switching production hosting.
+services:
+  - type: web
+    name: promoflash-comercial-preview
+    runtime: static
+    repo: https://github.com/enriquesequeidau-pixel/promoflash
+    branch: main
+    autoDeployTrigger: off
+    buildCommand: mkdir -p dist && cp index.html landing.css landing.js editor.html editor.css editor.js analytics-editor.js cuenta.html cuenta.js config.js privacidad.html terminos.html dist/
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: "max-age=31536000"
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://connect.facebook.net https://www.googletagmanager.com https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://nrwbnjjaqilgreqhpcov.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://www.facebook.com https://plausible.io; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Permissions-Policy
+        value: "camera=(), microphone=(), geolocation=()"
