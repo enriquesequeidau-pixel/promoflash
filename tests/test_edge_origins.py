@@ -42,5 +42,15 @@ class MexicoCheckoutFailsClosed(unittest.TestCase):
   self.assertEqual(response["market"],"MX")
   self.assertEqual(response["currency"],"MXN")
 
+class RetiredChileWebhook(unittest.TestCase):
+ def test_old_chile_subscription_webhook_stays_closed(self):
+  request=urllib.request.Request(BASE+"mercadopago-webhook",method="POST",
+   headers={"Content-Type":"application/json"},data=b'{}')
+  with self.assertRaises(urllib.error.HTTPError) as failed:
+   urllib.request.urlopen(request,timeout=25)
+  self.assertEqual(failed.exception.code,503)
+  import json
+  self.assertEqual(json.loads(failed.exception.read().decode())["error"],"mx_payment_provider_pending")
+
 if __name__=="__main__":
  unittest.main()
