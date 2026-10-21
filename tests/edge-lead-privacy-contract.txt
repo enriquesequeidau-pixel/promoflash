@@ -1,0 +1,22 @@
+
+import {ORIGIN,cors,json,client,bounded,throttle} from "./shared.ts";
+Deno.serve(async req=>{
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
+ if(req.method!=="POST")return json({error:"method_not_allowed"},405);
+ if(req.headers.get("origin")!==ORIGIN)return json({error:"origin_rejected"},403);
+ try{
+  const d=await bounded(req);
+  if(d.website)return json({accepted:true},200);
+  const email=String(d.email||"").trim().toLowerCase(),business=String(d.business||"").trim(),consent=d.consent===true;
+  if(!consent||email.length<5||email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||business.length>90)return json({error:"invalid_fields"},400);
+  const source="landing";const safe=(v:unknown,max=100)=>String(v||"").slice(0,max).replace(/[^\w\s-]/g,"");
+  const db=client();
+  if(!await throttle(db,req,"lead",15))return json({error:"too_many_requests"},429);
+  const record={email,business,consent:true,source,utm_campaign:safe(d.utm_campaign),utm_medium:safe(d.utm_medium,80),utm_source:safe(d.utm_source)};
+  const {error}=await db.from("pf_waitlist").insert(record);
+  if(error&&error.code!=="23505"){console.error("lead_insert_failed",error.code);return json({error:"registration_unavailable"},503);}
+  if(!error) await db.from("pf_analytics_events").insert({event_name:"lead_submitted",utm_campaign:record.utm_campaign,utm_medium:record.utm_medium,utm_source:record.utm_source});
+  // Do not disclose whether an email was already on the waitlist.
+  return json({accepted:true},200);
+ }catch(e){console.error("lead_unavailable",String(e).slice(0,100));return json({error:"invalid_request_or_unavailable"},503)}
+});
