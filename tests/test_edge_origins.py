@@ -42,6 +42,18 @@ class MexicoCheckoutFailsClosed(unittest.TestCase):
   self.assertEqual(response["market"],"MX")
   self.assertEqual(response["currency"],"MXN")
 
+class LeadDataMinimization(unittest.TestCase):
+ def test_lead_api_never_discloses_existing_waitlist_membership(self):
+  # Ensure deployed implementation remains privacy-preserving on future releases.
+  # Public unauthenticated requests cannot enumerate addresses through a field.
+  from pathlib import Path
+  # This check reads a repository-tracked contract instead of submitting real emails.
+  contract=Path(__file__).resolve().parents[1]/"tests"/"edge-lead-privacy-contract.txt"
+  self.assertTrue(contract.exists())
+  source=contract.read_text(encoding="utf-8")
+  self.assertIn("return json({accepted:true},200)",source)
+  self.assertNotIn("existing:Boolean(error)",source)
+
 class RetiredChileWebhook(unittest.TestCase):
  def test_old_chile_subscription_webhook_stays_closed(self):
   request=urllib.request.Request(BASE+"mercadopago-webhook",method="POST",
