@@ -22,6 +22,10 @@ class AuthPolicy(unittest.TestCase):
     def test_pro_money_switch_remains_off(self):
         cfg = (ROOT / 'config.js').read_text('utf-8')
         self.assertIn('proPaymentsEnabled: false',cfg)
+        self.assertIn("proTargetCountry: 'MX'",cfg)
+        self.assertIn("proTargetCurrency: 'MXN'",cfg)
+        self.assertIn("proCheckoutUrl: ''",cfg)
+        self.assertNotIn('mpago.la/',cfg)
 
 if __name__=='__main__':
     unittest.main()
