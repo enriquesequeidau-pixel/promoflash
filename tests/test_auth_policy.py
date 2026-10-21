@@ -19,6 +19,13 @@ class AuthPolicy(unittest.TestCase):
         self.assertIn("emailRedirectTo:new URL('cuenta.html',location.href).href",src)
         self.assertIn("resetPasswordForEmail(email,{redirectTo})",src)
         self.assertNotIn('misterioya.sequeidaulabs.com',src)
+    def test_account_document_csp(self):
+        html=(ROOT / 'cuenta.html').read_text('utf-8')
+        self.assertIn('http-equiv="Content-Security-Policy"',html)
+        self.assertIn("script-src 'self' https://cdn.jsdelivr.net",html)
+        self.assertIn("object-src 'none'",html)
+        self.assertNotIn("script-src 'unsafe-inline'",html)
+
     def test_pro_money_switch_remains_off(self):
         cfg = (ROOT / 'config.js').read_text('utf-8')
         self.assertIn('proPaymentsEnabled: false',cfg)
