@@ -1,7 +1,7 @@
 """Check mobile promo doesn't pan sideways; no changes to existing analytics."""
 from pathlib import Path
 import subprocess,time
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright,expect
 root=Path(__file__).resolve().parents[1]
 server=subprocess.Popen(['python3','-m','http.server','8791','--bind','127.0.0.1'],cwd=root,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 try:
@@ -40,11 +40,11 @@ try:
   assert page.locator('img[src="x"]').count()==0
   upload=page.locator('#photo')
   upload.set_input_files({'name':'fake.png','mimeType':'image/png','buffer':b'not-an-image'})
-  assert 'No se pudo abrir' in page.locator('#uploadError').inner_text()
+  expect(page.locator('#uploadError')).to_contain_text('No se pudo abrir')
   upload.set_input_files({'name':'over-limit.png','mimeType':'image/png','buffer':b'0'*(12*1024*1024+1)})
-  assert '12 MB' in page.locator('#uploadError').inner_text()
+  expect(page.locator('#uploadError')).to_contain_text('12 MB')
   upload.set_input_files({'name':'huge-dimensions.png','mimeType':'image/png','buffer':png(6101,10)})
-  assert 'dimensiones demasiado grandes' in page.locator('#uploadError').inner_text()
+  expect(page.locator('#uploadError')).to_contain_text('dimensiones demasiado grandes')
   assert not errors,errors
   page.close()
   print('PASS editor malicious text and file upload safeguards')
