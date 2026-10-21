@@ -22,6 +22,8 @@ jobs:
           grep -q "accountSupabaseUrl: 'https://nrwbnjjaqilgreqhpcov.supabase.co'" config.js
           grep -q 'proPaymentsEnabled: false' config.js
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' cuenta.js
+      - name: Test app-specific auth policy and recovery safety
+        run: python3 -m unittest discover -s tests -p 'test_auth_policy.py' -v
       - name: Custom HTTPS domain routes use shared factory
         shell: bash
         run: |
