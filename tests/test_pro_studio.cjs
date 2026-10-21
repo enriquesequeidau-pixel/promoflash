@@ -10,6 +10,7 @@ function sandbox() {
   const source=fs.readFileSync('api-contracts/pro-studio.ts','utf8')
     .replace(/^import \{createClient\} from "npm:[^"]+";\s*/,'')
     .replace('b:unknown','b')
+    .replace('let input:any','let input')
     .replace('voice as keyof typeof templates','voice');
   const Deno={env:{get:key=>({
     SUPABASE_URL:'https://sandbox.invalid',
