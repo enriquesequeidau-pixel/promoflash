@@ -29,5 +29,18 @@ class ProAccessBoundary(unittest.TestCase):
    urllib.request.urlopen(req,timeout=25)
   self.assertEqual(fail.exception.code,401)
 
+class MexicoCheckoutFailsClosed(unittest.TestCase):
+ def test_legacy_chile_checkout_is_unavailable_even_if_called_directly(self):
+  request=urllib.request.Request(BASE+"promoflash-checkout",method="POST",
+   headers={"Origin":ORIGIN,"Content-Type":"application/json"},data=b'{}')
+  with self.assertRaises(urllib.error.HTTPError) as fail:
+   urllib.request.urlopen(request,timeout=25)
+  self.assertEqual(fail.exception.code,503)
+  import json
+  response=json.loads(fail.exception.read().decode("utf-8"))
+  self.assertEqual(response["error"],"mx_checkout_provider_pending")
+  self.assertEqual(response["market"],"MX")
+  self.assertEqual(response["currency"],"MXN")
+
 if __name__=="__main__":
  unittest.main()
