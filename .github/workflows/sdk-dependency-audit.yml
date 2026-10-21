@@ -1,0 +1,42 @@
+name: Supabase SDK vulnerability audit
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-sdk:
+    name: npm audit SDK ${{ matrix.sdk }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk:
+          - '2.49.10'
+          - '2.57.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require current sources to reference audited SDK versions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          assert "@supabase/supabase-js@2.49.10" in Path("cuenta.js").read_text(encoding="utf-8"), "SDK version drift: cuenta.js"
+          assert "@supabase/supabase-js@2.57.0" in Path("api-contracts/pro-studio.ts").read_text(encoding="utf-8"), "SDK version drift: api-contracts/pro-studio.ts"
+          print("Pinned SDK import checks passed")
+          PY
+      - name: Audit resolved production dependency tree without changing app dependencies
+        env:
+          SDK_VERSION: ${{ matrix.sdk }}
+        run: |
+          set -euo pipefail
+          DIR="$(mktemp -d)"
+          printf '{"name":"microapps-sdk-audit","version":"1.0.0","private":true}\n' > "$DIR/package.json"
+          cd "$DIR"
+          npm install --package-lock-only --ignore-scripts --no-fund --no-audit "@supabase/supabase-js@${SDK_VERSION}"
+          npm audit --omit=dev --audit-level=high
