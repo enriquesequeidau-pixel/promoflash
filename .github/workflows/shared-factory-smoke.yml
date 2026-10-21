@@ -24,6 +24,8 @@ jobs:
           grep -q 'config.accountSupabaseUrl||config.supabaseUrl' cuenta.js
       - name: Test app-specific auth policy and recovery safety
         run: python3 -m unittest discover -s tests -p 'test_auth_policy.py' -v
+      - name: Simulate Pro Studio ownership and output allowlist
+        run: node --test tests/test_pro_studio.cjs
       - name: Confirm app-specific Supabase CORS (no payments or signups)
         run: python3 -m unittest discover -s tests -p 'test_edge_origins.py' -v
       - name: Custom HTTPS domain routes use shared factory
