@@ -25,10 +25,10 @@ try:
   def png(w,h):
    def chunk(kind,data):
     return struct.pack('>I',len(data))+kind+data+struct.pack('>I',zlib.crc32(kind+data)&0xffffffff)
-   raw=b'\\x00'+b'\\xff\\x00\\x00\\xff'*w
+   raw=bytes([0])+bytes([255,0,0,255])*w
    compressor=zlib.compressobj(6)
    compressed=b''.join(compressor.compress(raw) for _ in range(h))+compressor.flush()
-   return b'\\x89PNG\\r\\n\\x1a\\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',compressed)+chunk(b'IEND',b'')
+   return bytes([137,80,78,71,13,10,26,10])+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',compressed)+chunk(b'IEND',b'')
   page=browser.new_page(viewport={'width':390,'height':844})
   errors=[]
   page.on('pageerror',lambda e:errors.append(str(e)))
