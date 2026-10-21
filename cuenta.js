@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm';
 const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];

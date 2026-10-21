@@ -15,7 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         sdk:
-          - '2.49.10'
           - '2.57.0'
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +25,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          assert "@supabase/supabase-js@2.49.10" in Path("cuenta.js").read_text(encoding="utf-8"), "SDK version drift: cuenta.js"
+          assert "@supabase/supabase-js@2.57.0" in Path("cuenta.js").read_text(encoding="utf-8"), "SDK version drift: cuenta.js"
           assert "@supabase/supabase-js@2.57.0" in Path("api-contracts/pro-studio.ts").read_text(encoding="utf-8"), "SDK version drift: api-contracts/pro-studio.ts"
           print("Pinned SDK import checks passed")
           PY
