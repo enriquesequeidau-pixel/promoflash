@@ -21,6 +21,23 @@ class EdgeOrigins(unittest.TestCase):
     self.assertEqual(allow,ORIGIN,slug)
     self.assertNotEqual(allow,FOREIGN,slug)
 
+class PublicPayloadValidation(unittest.TestCase):
+ def test_malformed_and_forged_requests_rejected_without_database_writes(self):
+  cases=[
+   ("promoflash-lead",b'[]'),
+   ("promoflash-lead",b'{"email":2,"business":"Shop","consent":true}'),
+   ("promoflash-lead",b'{"email":"a@example.test","business":"Shop","consent":true,"isAdmin":true}'),
+   ("promoflash-events",b'{"event_name":"landing_view","user_id":"spoofed"}'),
+   ("promoflash-events",b'{"event_name":false}'),
+   ("promoflash-events",b'not-json')
+  ]
+  for slug,payload in cases:
+   with self.subTest(slug=slug,payload=payload):
+    req=urllib.request.Request(BASE+slug,method='POST',data=payload,headers={"Origin":ORIGIN,"Content-Type":"application/json"})
+    with self.assertRaises(urllib.error.HTTPError) as failed:
+     urllib.request.urlopen(req,timeout=25)
+    self.assertEqual(failed.exception.code,400)
+
 class ProAccessBoundary(unittest.TestCase):
  def test_missing_session_is_denied_without_touching_payments(self):
   req=urllib.request.Request(BASE+"promoflash-pro-studio",method="POST",
