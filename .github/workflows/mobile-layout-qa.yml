@@ -1,10 +1,10 @@
 name: PromoFlash mobile layout QA
 on:
   pull_request:
-    paths: ['landing.css', 'index.html', 'tests/mobile-layout.py', '.github/workflows/mobile-layout-qa.yml']
+    paths: ['landing.css', 'index.html', 'editor.js', 'editor.html', 'tests/mobile-layout.py', '.github/workflows/mobile-layout-qa.yml']
   push:
     branches: [main]
-    paths: ['landing.css', 'index.html', 'tests/mobile-layout.py', '.github/workflows/mobile-layout-qa.yml']
+    paths: ['landing.css', 'index.html', 'editor.js', 'editor.html', 'tests/mobile-layout.py', '.github/workflows/mobile-layout-qa.yml']
 permissions:
   contents: read
 jobs:
