@@ -17,7 +17,7 @@ class AuthPolicy(unittest.TestCase):
         self.assertIn("storageKey:'sequeidaulabs-promoflash-auth-v1'",src)
         self.assertIn("client.auth.signOut({scope:'local'})",src)
         self.assertIn("emailRedirectTo:new URL('cuenta.html',location.href).href",src)
-        self.assertIn("resetPasswordForEmail(email,{redirectTo})",src)
+        self.assertIn("resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})})",src)
         self.assertNotIn('misterioya.sequeidaulabs.com',src)
     def test_account_document_csp(self):
         html=(ROOT / 'cuenta.html').read_text('utf-8')
