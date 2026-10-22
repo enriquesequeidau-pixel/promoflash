@@ -1,11 +1,12 @@
 import {createAuthCaptcha} from './auth-captcha.mjs';
+import {tabScopedAuthStorage} from './auth-storage.mjs';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm';
 const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const captcha=createAuthCaptcha('#authCaptcha');captcha.activate();
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];
 const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v});
-const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sequeidaulabs-promoflash-auth-v1'}});
+const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:tabScopedAuthStorage('sequeidaulabs-promoflash-auth-v1'),storageKey:'sequeidaulabs-promoflash-auth-v1'}});
 function message(id,value,ok=false){$(id).textContent=value;$(id).className='status '+(ok?'okay':'bad')}
 function readable(e){return e?.message==='Invalid login credentials'?'Correo o contraseña incorrectos.':(e?.message||'Error desconocido. Intenta nuevamente.')}
 async function render(){const {data:{user},error}=await client.auth.getUser();if(error||!user){$('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');return;}$('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');$('userEmail').textContent=user.email||'Cuenta activa';$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)}
