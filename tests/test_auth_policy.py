@@ -26,6 +26,11 @@ class AuthPolicy(unittest.TestCase):
         self.assertIn("object-src 'none'",html)
         self.assertNotIn("script-src 'unsafe-inline'",html)
 
+    def test_expired_session_prevents_pro_refresh(self):
+        src=(ROOT/'cuenta.js').read_text('utf-8')
+        self.assertIn("if(!user){message('accountNotice','Tu sesión venció. Inicia sesión nuevamente.');await render();return;}",src)
+        self.assertIn("client.auth.signOut({scope:'local'})",src)
+
     def test_pro_money_switch_remains_off(self):
         cfg = (ROOT / 'config.js').read_text('utf-8')
         self.assertIn('proPaymentsEnabled: false',cfg)
