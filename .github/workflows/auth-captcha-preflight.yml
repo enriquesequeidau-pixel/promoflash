@@ -3,12 +3,16 @@ on:
   push:
     paths:
       - 'auth-captcha.mjs'
+      - 'tests/turnstile-preview.test.mjs'
       - 'cuenta.js'
+      - 'cuenta.html'
       - '.github/workflows/auth-captcha-preflight.yml'
   pull_request:
     paths:
       - 'auth-captcha.mjs'
+      - 'tests/turnstile-preview.test.mjs'
       - 'cuenta.js'
+      - 'cuenta.html'
       - '.github/workflows/auth-captcha-preflight.yml'
   workflow_dispatch:
 permissions:
@@ -18,6 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify opt-in Turnstile challenge never changes login security
+        run: node --test tests/turnstile-preview.test.mjs
       - name: Ensure CAPTCHA stays fail-safe before coordinated rollout
         shell: bash
         run: |
