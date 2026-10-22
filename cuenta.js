@@ -1,6 +1,8 @@
+import {createAuthCaptcha} from './auth-captcha.mjs';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm';
 const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
+const captcha=createAuthCaptcha('#authCaptcha');captcha.activate();
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];
 const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v});
 const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sequeidaulabs-promoflash-auth-v1'}});
@@ -23,7 +25,7 @@ async function startCheckout(){
   window.location.assign(url.href);
  }catch(e){message('accountNotice',e.message||'No se pudo iniciar el pago.');$('startPro').disabled=false;}
 }
-async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<(action==='signup'?10:8)){message('notice',action==='signup'?'Para crear una cuenta, usa una contraseña de al menos 10 caracteres.':'La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href}}):await client.auth.signInWithPassword({email,password});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{setBusy(false)}}
+async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<(action==='signup'?10:8)){message('notice',action==='signup'?'Para crear una cuenta, usa una contraseña de al menos 10 caracteres.':'La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const captchaToken=captcha.requiredToken();const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href,...(captchaToken?{captchaToken}:{})}}):await client.auth.signInWithPassword({email,password,options:captchaToken?{captchaToken}:undefined});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{captcha.reset();setBusy(false)}}
 async function requestPasswordReset(){
  const email=$('email').value.trim();
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -36,13 +38,14 @@ async function requestPasswordReset(){
  message('notice','Solicitando el correo de recuperación…',true);
  try{
   const redirectTo=new URL('cuenta.html',location.href).href;
-  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo});
+  const captchaToken=captcha.requiredToken();
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})});
   if(error)throw error;
   message('notice','Solicitud enviada. Si existe una cuenta con ese correo, recibirás un enlace. Revisa tu bandeja y spam.',true);
  }catch(e){
   const limited=e?.status===429||String(e?.message||'').toLowerCase().includes('rate limit');
   message('notice',limited?'Hay demasiados intentos. Espera unos minutos y vuelve a solicitar el enlace.':'No se pudo solicitar el correo. Intenta de nuevo en unos minutos.');
- }finally{btn.disabled=false;btn.textContent=originalLabel;}
+ }finally{captcha.reset();btn.disabled=false;btn.textContent=originalLabel;}
 }
 async function updateRecoveredPassword(){
  const password=$('newPassword').value;
