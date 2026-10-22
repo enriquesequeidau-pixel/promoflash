@@ -1,0 +1,40 @@
+name: PromoFlash tab-scoped Auth session QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'auth-storage.mjs'
+      - 'cuenta.js'
+      - 'tests/tab-auth-storage.test.mjs'
+      - '.github/workflows/auth-session-qa.yml'
+  pull_request:
+    paths:
+      - 'auth-storage.mjs'
+      - 'cuenta.js'
+      - 'tests/tab-auth-storage.test.mjs'
+      - '.github/workflows/auth-session-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  auth-session:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify session migration, isolation and no persistent token fallback
+        run: |
+          node --check cuenta.js
+          node --test tests/tab-auth-storage.test.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          account=Path('cuenta.js').read_text('utf-8')
+          assert "storage:tabScopedAuthStorage('sequeidaulabs-promoflash-auth-v1')" in account
+          assert "storageKey:'sequeidaulabs-promoflash-auth-v1'" in account
+          assert "client.auth.signOut({scope:'local'})" in account
+          assert "emailRedirectTo:new URL('cuenta.html',location.href).href" in account
+          assert "new URL('cuenta.html',location.href).href" in account
+          print('PASS: tab-scoped tokens, per-app signout and recovery redirects')
+          PY
