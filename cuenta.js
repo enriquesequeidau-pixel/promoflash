@@ -64,7 +64,7 @@ $('startPro').addEventListener('click',startCheckout);
 $('signIn').addEventListener('click',()=>auth('signin'));
 $('signUp').addEventListener('click',()=>auth('signup'));
 $('signOut').addEventListener('click',async()=>{setBusy(true);await client.auth.signOut({scope:'local'});setBusy(false);await render()});
-$('refreshPro').addEventListener('click',async()=>{const{data:{user}}=await client.auth.getUser();if(user)$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)});
+$('refreshPro').addEventListener('click',async()=>{const{data:{user}}=await client.auth.getUser();if(!user){message('accountNotice','Tu sesión venció. Inicia sesión nuevamente.');await render();return;}$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)});
 client.auth.onAuthStateChange(()=>{queueMicrotask(()=>render())});
 render();
 
