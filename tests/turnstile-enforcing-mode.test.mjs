@@ -96,7 +96,7 @@ test('signup, login and recovery have CAPTCHA token and reset handling before ro
   assert.equal(variants.length,1,'expected exactly one app-specific auth module');
   const v=variants[0],source=fs.readFileSync(v.file,'utf8');
   const occurrences=source.split(v.token).length-1;
-  assert.ok(occurrences>=3,v.file+' requires Turnstile for signup, login and recovery');
+  assert.ok(occurrences>=(v.file==='cuenta.js'?2:3),v.file+' requires Turnstile for signup, login and recovery (PromoFlash shares the sign-in/sign-up auth helper)');
   assert.ok(source.includes(v.reset),v.file+' clears used tokens');
   if(v.file==='cloud.mjs'){
     assert.ok(source.includes('gotrue_meta_security'),'raw GoTrue API must pass captcha_token');
