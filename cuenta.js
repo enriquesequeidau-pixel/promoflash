@@ -5,7 +5,7 @@ const config=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const captcha=createAuthCaptcha('#authCaptcha');captcha.activate();
 const btns=['signIn','signUp','signOut','refreshPro','startPro'];
-const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v});
+const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v||(id==='startPro'&&!config.proPaymentsEnabled)});
 const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:tabScopedAuthStorage('sequeidaulabs-promoflash-auth-v1'),storageKey:'sequeidaulabs-promoflash-auth-v1'}});
 function message(id,value,ok=false){$(id).textContent=value;$(id).className='status '+(ok?'okay':'bad')}
 function readable(e){return e?.message==='Invalid login credentials'?'Correo o contraseña incorrectos.':(e?.message||'Error desconocido. Intenta nuevamente.')}
@@ -22,9 +22,9 @@ async function startCheckout(){
   const data=await response.json();
   if(!response.ok||!data.checkout_url)throw new Error(data.error||'Checkout no disponible.');
   const url=new URL(data.checkout_url);
-  if(url.protocol!=='https:'||!(url.hostname==='mercadopago.cl'||url.hostname.endsWith('.mercadopago.cl')||url.hostname==='mercadopago.com'||url.hostname.endsWith('.mercadopago.com')))throw new Error('URL de pago inesperada.');
+  if(url.protocol!=='https:'||!(url.hostname==='mercadopago.com.mx'||url.hostname.endsWith('.mercadopago.com.mx')||url.hostname==='mercadopago.com'||url.hostname.endsWith('.mercadopago.com')))throw new Error('URL de pago inesperada.');
   window.location.assign(url.href);
- }catch(e){message('accountNotice',e.message||'No se pudo iniciar el pago.');$('startPro').disabled=false;}
+ }catch(e){message('accountNotice',e.message||'No se pudo iniciar el pago.');$('startPro').disabled=!config.proPaymentsEnabled;}
 }
 async function auth(action){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){message('notice','Ingresa correo y contraseña.');return}if(password.length<(action==='signup'?10:8)){message('notice',action==='signup'?'Para crear una cuenta, usa una contraseña de al menos 10 caracteres.':'La contraseña debe tener al menos 8 caracteres.');return}setBusy(true);try{const captchaToken=captcha.requiredToken();const{data,error}=action==='signup'?await client.auth.signUp({email,password,options:{emailRedirectTo:new URL('cuenta.html',location.href).href,...(captchaToken?{captchaToken}:{})}}):await client.auth.signInWithPassword({email,password,options:captchaToken?{captchaToken}:undefined});if(error){message('notice',readable(error));return}if(action==='signup'&&!data.session){message('notice','Revisa tu correo para confirmar tu cuenta y luego inicia sesión.',true)}else{message('notice','Sesión iniciada.',true);await render()}}catch(e){message('notice',readable(e))}finally{captcha.reset();setBusy(false)}}
 async function requestPasswordReset(){

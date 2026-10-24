@@ -27,6 +27,8 @@ jobs:
           node-version: '22'
       - name: Validate challenge behavior under staged enforcement
         run: node --test tests/turnstile-preview.test.mjs
+      - name: Verify auth and disabled Pro checkout regression
+        run: python3 -m unittest discover -s tests -p 'test_auth_policy.py' -v
       - name: Validate staged CAPTCHA constraints before coordinated rollout
         shell: bash
         run: |
