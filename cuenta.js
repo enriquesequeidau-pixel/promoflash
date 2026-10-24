@@ -9,8 +9,23 @@ const setBusy=v=>btns.forEach(id=>{if($(id))$(id).disabled=v||(id==='startPro'&&
 const client=createClient(config.accountSupabaseUrl||config.supabaseUrl,config.accountSupabaseAnonKey||config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:tabScopedAuthStorage('sequeidaulabs-promoflash-auth-v1'),storageKey:'sequeidaulabs-promoflash-auth-v1'}});
 function message(id,value,ok=false){$(id).textContent=value;$(id).className='status '+(ok?'okay':'bad')}
 function readable(e){return e?.message==='Invalid login credentials'?'Correo o contraseña incorrectos.':(e?.message||'Error desconocido. Intenta nuevamente.')}
-async function render(){const {data:{user},error}=await client.auth.getUser();if(error||!user){$('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');return;}$('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');$('userEmail').textContent=user.email||'Cuenta activa';$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)}
-async function refreshPro(id){$('proState').textContent='Consultando tu estado Pro…';const{data,error}=await client.from('pro_entitlements').select('active,verified_at').eq('user_id',id).maybeSingle();if(error){$('proState').textContent='No fue posible comprobar el acceso Pro. Vuelve a intentarlo.';return}$('proState').textContent=data?.active?'✓ Tu acceso Pro figura activo.':'Plan gratis · Tu acceso Pro aún no está habilitado.';$('proTools').classList.toggle('hidden',!data?.active)}
+let proRevision=0;
+function hideProTools(clearInputs=false){
+ $('proTools').classList.add('hidden');
+ $('proOutput').replaceChildren();
+ if(clearInputs){$('proShop').value='';$('proProduct').value='';}
+}
+async function render(){const revision=++proRevision;const {data:{user},error}=await client.auth.getUser();if(revision!==proRevision)return;if(error||!user){hideProTools(true);$('signedOut').classList.remove('hidden');$('signedIn').classList.add('hidden');return;}$('signedOut').classList.add('hidden');$('signedIn').classList.remove('hidden');$('userEmail').textContent=user.email||'Cuenta activa';$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id,revision)}
+async function refreshPro(id,revision=++proRevision){
+ $('proState').textContent='Consultando tu estado Pro…';
+ $('proTools').classList.add('hidden');
+ const{data,error}=await client.from('pro_entitlements').select('active,verified_at').eq('user_id',id).maybeSingle();
+ if(revision!==proRevision)return;
+ if(error){hideProTools();$('proState').textContent='No fue posible comprobar el acceso Pro. Vuelve a intentarlo.';return}
+ if(!data?.active){hideProTools();$('proState').textContent='Plan gratis · Tu acceso Pro aún no está habilitado.';return}
+ $('proState').textContent='✓ Tu acceso Pro figura activo.';
+ $('proTools').classList.remove('hidden');
+}
 async function startCheckout(){
  if(!config.proPaymentsEnabled){message('accountNotice','Los pagos aún no están habilitados: estamos probando la verificación de suscripciones.');return;}
  const {data:{session}}=await client.auth.getSession();
@@ -67,7 +82,7 @@ client.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')queueMicr
 $('startPro').addEventListener('click',startCheckout);
 $('signIn').addEventListener('click',()=>auth('signin'));
 $('signUp').addEventListener('click',()=>auth('signup'));
-$('signOut').addEventListener('click',async()=>{setBusy(true);await client.auth.signOut({scope:'local'});setBusy(false);await render()});
+$('signOut').addEventListener('click',async()=>{++proRevision;hideProTools(true);setBusy(true);await client.auth.signOut({scope:'local'});setBusy(false);await render()});
 $('refreshPro').addEventListener('click',async()=>{const{data:{user}}=await client.auth.getUser();if(!user){message('accountNotice','Tu sesión venció. Inicia sesión nuevamente.');await render();return;}$('startPro').disabled=!config.proPaymentsEnabled;await refreshPro(user.id)});
 client.auth.onAuthStateChange(()=>{queueMicrotask(()=>render())});
 render();
