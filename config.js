@@ -19,14 +19,4 @@ window.PROMOFLASH_CONFIG = {
   contactEmail: 'soporte@sequeidaulabs.com'
 };
 
-// Analítica habilitada por defecto.
-// Mantiene intactos la landing, el editor, formularios, estilos y lógica de negocio.
-try {
-  localStorage.setItem('promoflash_analytics_choice', 'yes');
-} catch (e) {}
-
-// Oculta el control antiguo de opt-in/opt-out que todavía crean los scripts existentes.
-document.addEventListener('DOMContentLoaded', () => {
-  const control = document.getElementById('analyticsPreference');
-  if (control) control.remove();
-});
+// Las estadísticas requieren consentimiento explícito. landing.js controla la preferencia.
