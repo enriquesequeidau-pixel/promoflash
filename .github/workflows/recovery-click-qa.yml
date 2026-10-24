@@ -8,6 +8,14 @@ on:
       - 'config.js'
       - 'tests/recovery-browser.py'
       - '.github/workflows/recovery-click-qa.yml'
+  pull_request:
+    paths:
+      - 'cuenta.html'
+      - 'cuenta.js'
+      - 'config.js'
+      - 'auth-captcha.mjs'
+      - 'tests/recovery-browser.py'
+      - '.github/workflows/recovery-click-qa.yml'
   workflow_dispatch:
 permissions:
   contents: read
