@@ -30,6 +30,14 @@ try:
                 else:
                     posts.append({'method':request.method,'url':request.url,'body':request.post_data})
                     route.fulfill(status=200,content_type='application/json',headers={'Access-Control-Allow-Origin':'*'},body='{}')
+            # The production Turnstile challenge is enabled. Simulate a solved
+            # challenge in this isolated browser fixture; Supabase recovery
+            # requests are intercepted below, so no real token/email is sent.
+            page.route('https://challenges.cloudflare.com/turnstile/v0/api.js*',
+                       lambda route: route.fulfill(
+                           status=200,content_type='application/javascript',
+                           body="window.turnstile={render:(host,opts)=>{queueMicrotask(()=>opts.callback('QA_ONLY_FAKE_TOKEN'));return 1},reset:()=>{}};"
+                       ))
             page.route('**/auth/v1/recover*',fake_recovery)
             response=page.goto(f'{base_url}/cuenta.html',wait_until='domcontentloaded')
             assert response and response.status==200
