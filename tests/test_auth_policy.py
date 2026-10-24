@@ -31,6 +31,14 @@ class AuthPolicy(unittest.TestCase):
         self.assertIn("if(!user){message('accountNotice','Tu sesión venció. Inicia sesión nuevamente.');await render();return;}",src)
         self.assertIn("client.auth.signOut({scope:'local'})",src)
 
+    def test_pro_button_never_reenables_when_payments_are_disabled(self):
+        src=(ROOT/'cuenta.js').read_text('utf-8')
+        self.assertIn("v||(id==='startPro'&&!config.proPaymentsEnabled)",src)
+        self.assertIn("if(!config.proPaymentsEnabled){message('accountNotice'",src)
+        self.assertIn("'startPro').disabled=!config.proPaymentsEnabled",src)
+        self.assertIn("url.hostname==='mercadopago.com.mx'",src)
+        self.assertNotIn("url.hostname==='mercadopago.cl'",src)
+
     def test_pro_money_switch_remains_off(self):
         cfg = (ROOT / 'config.js').read_text('utf-8')
         self.assertIn('proPaymentsEnabled: false',cfg)
