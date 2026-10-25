@@ -16,6 +16,17 @@ const PRODUCT_B={...PRODUCT,id:'product-b',brandId:BRAND_B,ownerUid:B};
 const BRANDS_A=[{id:BRAND_A,ownerUid:A,name:'CAFÉ DE CASA'}];
 const BRANDS_B=[{id:BRAND_B,ownerUid:B,name:'TIENDA B'}];
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
+async function until(predicate,label='async HTTP request'){
+  const deadline=Date.now()+3000;
+  while(Date.now()<deadline){
+    if(predicate())return;
+    await new Promise(resolve=>setTimeout(resolve,10));
+  }
+  throw new Error('Timed out waiting for '+label);
+}
+async function settle(ui){
+  await until(()=>!ui.button.disabled,'catalog editor action');
+}
 
 async function withServer(fn,overrides={}){
   const calls={auth:[],products:[],brands:[]};
@@ -77,7 +88,7 @@ test('real HTTP product + brand lookup populates existing editor only after expl
     assert.deepEqual(Object.values(ui.controls).map(x=>x.value),
       ['FREE-UNCHANGED','FREE-UNCHANGED','FREE-UNCHANGED']);
     assert.deepEqual(calls.auth,[]);
-    ui.click();await tick();await tick();
+    ui.click();await settle(ui);
     assert.deepEqual([ui.controls.productName.value,ui.controls.price.value,ui.controls.brand.value],
       ['Café mexicano','$199.00 MXN','CAFÉ DE CASA']);
     assert.equal(ui.categoryClicks,1);assert.equal(ui.inputEvents,3);
@@ -95,7 +106,7 @@ test('real HTTP product + brand lookup populates existing editor only after expl
 test('Free anonymous request cannot read brands or products or change editor',async()=>{
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client,null);
-    ui.click();await tick();
+    ui.click();await settle(ui);
     assert.equal(ui.errors[0],'UNAUTHENTICATED');
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.inputEvents,0);
@@ -105,7 +116,7 @@ test('Free anonymous request cannot read brands or products or change editor',as
 test('forged bearer token fails server verification before private reads',async()=>{
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client,'forged-session-token');
-    ui.click();await tick();await tick();
+    ui.click();await settle(ui);
     assert.equal(ui.errors[0],'UNAUTHENTICATED');
     assert.equal(ui.categoryClicks,0);
     assert.deepEqual(calls.products,[]);assert.deepEqual(calls.brands,[]);
@@ -114,7 +125,7 @@ test('forged bearer token fails server verification before private reads',async(
 test('foreign brand name is not accessible even when product refers to it',async()=>{
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client);
-    ui.click();await tick();await tick();
+    ui.click();await settle(ui);
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.errors[0],'BRAND_NOT_FOUND');
     assert.deepEqual(calls.brands,[A]);
@@ -123,7 +134,7 @@ test('foreign brand name is not accessible even when product refers to it',async
 test('server rejects cross-tenant brand row without exposing owner or private name',async()=>{
   await withServer(async({client})=>{
     const ui=fakeEditor(client);
-    ui.click();await tick();await tick();
+    ui.click();await settle(ui);
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.errors[0],'CATALOG_UNAVAILABLE');
   },{listBrands:async()=>BRANDS_B});
@@ -132,11 +143,11 @@ test('changing session during delayed brand lookup prevents stale editor mutatio
   let release;
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client);
-    ui.click();await tick();
+    ui.click();await settle(ui);
     assert.equal(calls.brands.length,1);
     ui.action.setRequest('owner-two-token');
     release(BRANDS_A);
-    await tick();await tick();
+    await settle(ui);
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.inputEvents,0);
     assert.equal(ui.button.disabled,false);
@@ -146,7 +157,7 @@ test('changing session during delayed brand lookup prevents stale editor mutatio
 test('malformed backend response and duplicate brand IDs fail closed',async()=>{
   await withServer(async({client})=>{
     const ui=fakeEditor(client);
-    ui.click();await tick();await tick();
+    ui.click();await settle(ui);
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.errors[0],'CATALOG_UNAVAILABLE');
   },{listBrands:async()=>[BRANDS_A[0],BRANDS_A[0]]});
