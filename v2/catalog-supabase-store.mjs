@@ -10,6 +10,7 @@
  * rate limits and full staging E2E must all be reviewed first.
  */
 import {normalizeProductDraft} from './product-contract.mjs';
+import {normalizeBrandDraft} from './brand-contract.mjs';
 
 const REF_URL=/^https:\/\/[a-z0-9]{20}\.supabase\.co$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -101,6 +102,27 @@ export function createSupabaseCatalogStore({projectUrl,publishableKey,serviceRol
     return rows.map(row=>productFromDb(row,uid));
   }
 
+  /** Brand names for the explicit editor picker; no logo, contact or owner metadata. */
+  async function listBrands(uid){
+    if(!UUID.test(uid??''))throw error('UNAUTHENTICATED');
+    const url=projectUrl+'/rest/v1/pf_v2_brands?select=id,owner_uid,name'+
+      '&owner_uid=eq.'+uid+'&order=created_at.desc&limit=5';
+    const res=await fetcher(url,{method:'GET',headers:serviceHeaders,
+      cache:'no-store',redirect:'error'});
+    if(res?.status!==200)throw error('CATALOG_UNAVAILABLE');
+    const rows=await jsonOrFail(res);
+    if(!Array.isArray(rows)||rows.length>5)throw error('CATALOG_UNAVAILABLE');
+    return rows.map(row=>{
+      if(!row||typeof row!=='object'||Array.isArray(row)||
+          row.owner_uid!==uid||!UUID.test(row.id??''))
+        throw error('CATALOG_UNAVAILABLE');
+      let name;
+      try{name=normalizeBrandDraft({name:row.name}).name;}
+      catch{throw error('CATALOG_UNAVAILABLE');}
+      return Object.freeze({id:row.id,ownerUid:uid,name});
+    });
+  }
+
   /** Database RPC atomically rechecks the verified plan, owner and quota. */
   async function createProduct(uid,input){
     if(!UUID.test(uid??''))throw error('UNAUTHENTICATED');
@@ -139,5 +161,5 @@ export function createSupabaseCatalogStore({projectUrl,publishableKey,serviceRol
     return readOne(uid,id);
   }
 
-  return Object.freeze({authenticateBearer,listProducts,createProduct});
+  return Object.freeze({authenticateBearer,listProducts,listBrands,createProduct});
 }
