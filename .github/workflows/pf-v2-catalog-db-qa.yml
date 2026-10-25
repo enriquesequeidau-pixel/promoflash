@@ -9,6 +9,8 @@ on:
       - 'tests/sql/catalog-rls-assertions.sql'
       - 'v2/sql/pf_v2_product_write_stage_only.sql'
       - 'tests/sql/catalog-product-write-assertions.sql'
+      - 'tests/sql/catalog-product-concurrency-seed.sql'
+      - 'tests/sql/run-catalog-concurrency.sh'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
   pull_request:
     paths:
@@ -17,6 +19,8 @@ on:
       - 'tests/sql/catalog-rls-assertions.sql'
       - 'v2/sql/pf_v2_product_write_stage_only.sql'
       - 'tests/sql/catalog-product-write-assertions.sql'
+      - 'tests/sql/catalog-product-concurrency-seed.sql'
+      - 'tests/sql/run-catalog-concurrency.sh'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
 jobs:
   catalog-database-isolation:
@@ -51,3 +55,7 @@ jobs:
       - name: Test service-role product writes, quotas and downgrade
         run: |
           docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-product-write-assertions.sql
+      - name: Race two independent service processes against Pro quota
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-product-concurrency-seed.sql
+          bash tests/sql/run-catalog-concurrency.sh "${{ job.services.postgres.id }}"
