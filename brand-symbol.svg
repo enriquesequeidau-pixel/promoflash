@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+<title id="title">PromoFlash</title><desc id="desc">Letra P blanca con un rayo verde lima sobre un círculo morado</desc>
+<defs><radialGradient id="bg" cx=".45" cy=".32" r=".88"><stop stop-color="#4a1692"/><stop offset=".65" stop-color="#210b4a"/><stop offset="1" stop-color="#130822"/></radialGradient><linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#943bff"/><stop offset=".53" stop-color="#d5a8ff"/><stop offset="1" stop-color="#c7ff35"/></linearGradient></defs>
+<circle cx="64" cy="64" r="61" fill="url(#bg)" stroke="url(#rim)" stroke-width="3.2"/>
+<path fill="#fff" d="M37 98 46 33q1-7 9-7h22q26 0 26 21 0 22-24 23H64l-4 28q-1 7-9 7H43q-7 0-6-7Zm31-56-2.5 14H80q8 0 8-7t-9-7Z" fill-rule="evenodd"/>
+<path d="m72 37-22 33h15l-9 28 33-44H74l8-17Z" fill="#c7ff35" stroke="#220b49" stroke-width="2" stroke-linejoin="round"/>
+<path d="M35 27 30 18M25 37l-10-2" fill="none" stroke="#c7ff35" stroke-linecap="round" stroke-width="5"/>
+</svg>
