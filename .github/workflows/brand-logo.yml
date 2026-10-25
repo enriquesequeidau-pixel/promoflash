@@ -24,7 +24,7 @@ jobs:
           # The approved image includes a circular border and wordmark.
           # Crop its original P-and-lightning glyph for compact navigation.
           k=art.width/200
-          box=tuple(round(t*k) for t in (52,32,151,131))
+          box=tuple(round(t*k) for t in (46,11,156,121))
           tile=art.crop(box).resize((256,256),Image.Resampling.LANCZOS)
           alpha=Image.new('L',tile.size,0)
           d=ImageDraw.Draw(alpha)
@@ -36,8 +36,11 @@ jobs:
               p=Path(filename)
               s=p.read_text()
               old='<img class="brand-symbol" src="brand-symbol.svg"'
-              assert s.count(old)==expected,(filename,s.count(old))
-              s=s.replace(old,'<img class="brand-symbol" src="brand-mark.png"')
+              current='<img class="brand-symbol" src="brand-mark.png"'
+              if s.count(old) == expected:
+                  s=s.replace(old,current)
+              else:
+                  assert s.count(current)==expected,(filename,s.count(old),s.count(current))
               p.write_text(s)
           for name in ['index.html','editor.html','cuenta.html']:
               assert 'src="brand-mark.png"' in Path(name).read_text()
