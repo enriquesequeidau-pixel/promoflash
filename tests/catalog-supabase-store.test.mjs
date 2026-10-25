@@ -144,3 +144,18 @@ test('real local HTTP -> verified Supabase Auth mock -> RPC mock -> owner-checke
     await new Promise(resolve=>{server.close(resolve);server.closeAllConnections();});
   }
 });
+
+test('normalized server product accepts only MXN, never client privilege fields',async()=>{
+  const {store,calls}=fixture();
+  const saved=await store.createProduct(A,{...input,currency:'MXN'});
+  assert.equal(saved.id,PRODUCT);
+  assert.equal(calls.length,2);
+  for(const bad of [
+    {...input,currency:'CLP'},
+    {...input,currency:'MXN',ownerUid:B},
+    {...input,currency:'MXN',plan:'business'}
+  ]){
+    await assert.rejects(store.createProduct(A,bad),{code:'INVALID_PRODUCT'});
+  }
+  assert.equal(calls.length,2);
+});
