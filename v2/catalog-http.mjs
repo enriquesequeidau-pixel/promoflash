@@ -49,8 +49,9 @@ async function readJson(req){
   try{value=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw fail(400,'INVALID_JSON');}
   return value;
 }
-function safeProduct(row){
+function safeProduct(row,expectedOwnerUid){
   if(!row||typeof row!=='object'||Array.isArray(row)||
+      row.ownerUid!==expectedOwnerUid||!UUID.test(row.ownerUid??'')||
       typeof row.id!=='string'||!ID.test(row.id)||!UUID.test(row.brandId??''))
     throw fail(503,'CATALOG_UNAVAILABLE');
   const allowed=['id','brandId','name','description','category','priceCentavos','currency','photoAssetId'];
@@ -105,7 +106,7 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,create
         const records=await listProducts(principal.uid);
         if(!Array.isArray(records)||records.length>250)
           throw fail(503,'CATALOG_UNAVAILABLE');
-        const products=records.map(safeProduct);
+        const products=records.map(row=>safeProduct(row,principal.uid));
         if(new Set(products.map(p=>p.id)).size!==products.length)
           throw fail(503,'CATALOG_UNAVAILABLE');
         send(res,200,{products});
@@ -121,7 +122,7 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,create
       }
       // Only owner uid extracted from verified token goes to the trusted RPC.
       const created=await createProduct(principal.uid,draft);
-      send(res,201,{product:safeProduct(created)});
+      send(res,201,{product:safeProduct(created,principal.uid)});
     }catch(error){
       const code=typeof error?.code==='string'?error.code:'';
       const status=error?.httpStatus===413?413:
