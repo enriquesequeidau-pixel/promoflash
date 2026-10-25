@@ -1,0 +1,83 @@
+name: Apply PromoFlash neon brand safely
+on:
+  push:
+    branches: [feat/brand-refresh-20261025]
+    paths: [.github/workflows/brand-refresh.yml]
+permissions:
+  contents: write
+jobs:
+  brand-refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/brand-refresh-20261025
+      - name: Apply guarded brand updates (no application logic changes)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile .github/scripts/apply-brand-refresh.py
+          python3 .github/scripts/apply-brand-refresh.py
+      - name: Check theme, CSP and functional entry points
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          pages = {
+              'index.html': 'pf-landing',
+              'editor.html': 'pf-editor',
+              'cuenta.html': 'pf-account',
+              'privacidad.html': 'pf-legal',
+              'terminos.html': 'pf-legal',
+          }
+          css = Path('brand.css').read_text()
+          logo = Path('brand-symbol.svg').read_text()
+          assert logo.startswith('<svg') and 'PromoFlash' in logo
+          assert '#c7ff35' in css and '#150a2c' in css
+          for name, cls in pages.items():
+              raw = Path(name).read_text()
+              assert ('class="pf-brand ' + cls + '"') in raw, name
+              assert 'href="brand.css?v=20261025"' in raw, name
+              assert 'href="brand-symbol.svg"' in raw, name
+              assert 'https://promoflash.sequeidaulabs.com' not in css
+              assert 'href="brand-symbol.svg"' in raw
+          idx = Path('index.html').read_text()
+          editor = Path('editor.html').read_text()
+          account = Path('cuenta.html').read_text()
+          for item in ['id="generate"', 'id="photo"', 'id="downloadAll"', 'id="remix"', 'src="editor.js"']:
+              assert item in editor, item
+          for item in ['id="signedOut"', 'id="email"', 'id="password"', 'id="resetPassword"', 'cuenta.js', 'Content-Security-Policy']:
+              assert item in account, item
+          assert 'window.PROMOFLASH_DEMOS=' in idx
+          assert 'brand-symbol.svg' in idx and 'brand-symbol.svg' in editor
+          print("PASS: original application hooks remain, CSP unchanged, logo and styles linked on all five pages")
+          PY
+          node --check landing.js
+          node --check editor.js
+          node --check cuenta.js
+          node --check analytics-editor.js
+          node --check config.js
+      - name: Capture current Facebook page profile artwork for optional exact-logo reuse
+        continue-on-error: true
+        run: |
+          set -e
+          python3 -m pip install --quiet pillow
+          curl --fail --silent --show-error --location --max-time 25 'https://static.metricool.com/brand/facebook-page-image?brandId=7645450&v=675141c6416d3ab8d9a19ca9fa931409' -o /tmp/pf-source
+          python3 - <<'PY'
+          from PIL import Image
+          image = Image.open('/tmp/pf-source')
+          image.load()
+          print(f"PromoFlash Facebook image: {image.width} x {image.height}, {image.mode}")
+          assert image.width >= 80 and image.height >= 80
+          assert image.width / image.height > .8 and image.width / image.height < 1.25
+          image.convert('RGB').save('brand-official-facebook.png', optimize=True)
+          PY
+      - name: Commit visual files without modifying scripts
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html editor.html cuenta.html privacidad.html terminos.html
+          if [ -f brand-official-facebook.png ]; then git add brand-official-facebook.png; fi
+          git diff --cached --stat
+          git diff --cached --quiet || (git commit -m 'Apply PromoFlash neon brand across public pages (visual-only)' && git push)
