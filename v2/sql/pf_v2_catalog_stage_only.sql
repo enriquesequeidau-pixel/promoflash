@@ -71,6 +71,11 @@ create policy pf_v2_products_select_owner on public.pf_v2_products
   for select to authenticated
   using (owner_uid = (select auth.uid()));
 
+-- The server-only role can access the tables after validating each request.
+-- NEVER put its credentials in browser code or configure direct unverified writes.
+grant select, insert, update, delete on table
+  public.pf_v2_brands, public.pf_v2_products to service_role;
+
 -- No policy grants writes to anon/authenticated. Service-role backend must
 -- recheck identity, subscription, quotas and private photo ownership.
 commit;
