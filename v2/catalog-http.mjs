@@ -18,7 +18,7 @@ const ID=/^[a-zA-Z0-9_-]{1,80}$/;
 const ERRORS=Object.freeze({
   UNAUTHENTICATED:401,PLAN_REQUIRED:403,PRODUCT_NOT_FOUND:404,
   BRAND_NOT_FOUND:404,PHOTO_NOT_FOUND:404,PRODUCT_QUOTA:409,
-  INVALID_PRODUCT:422
+  BRAND_QUOTA:409,INVALID_BRAND:422,INVALID_PRODUCT:422
 });
 function fail(status,code){
   const error=new Error(code);
@@ -89,10 +89,11 @@ function safeBrand(row,expectedOwnerUid){
  * listProducts(uid) may include ownerUid, but it MUST be owner-filtered.
  * createProduct(uid,draft) must recheck plan and quota in ONE DB transaction.
  */
-export function createCatalogHttpHandler({authenticateBearer,listProducts,listBrands,createProduct,
+export function createCatalogHttpHandler({authenticateBearer,listProducts,listBrands,createProduct,createBrand,
   allowedOrigins=[]}={}){
   if([authenticateBearer,listProducts,createProduct].some(x=>typeof x!=='function')||
       (listBrands!==undefined&&typeof listBrands!=='function')||
+      (createBrand!==undefined&&typeof createBrand!=='function')||
       !Array.isArray(allowedOrigins)||allowedOrigins.some(x=>
         typeof x!=='string'||!/^https:\/\/[a-z0-9.-]+(?::[0-9]{1,5})?$/i.test(x)))
     throw new TypeError('Trusted catalog HTTP dependencies required');
@@ -101,10 +102,11 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
       const isProducts=req.url===PRODUCTS_PATH;
       const isBrands=req.url===BRANDS_PATH;
       if(!isProducts&&!isBrands){send(res,404,{error:'NOT_FOUND'});return;}
-      if((isBrands&&req.method!=='GET')||
+      if((isBrands&&req.method!=='GET'&&
+          (req.method!=='POST'||typeof createBrand!=='function'))||
           (isProducts&&req.method!=='GET'&&req.method!=='POST')){
         send(res,405,{error:'METHOD_NOT_ALLOWED'},
-          {Allow:isBrands?'GET':'GET, POST'});return;
+          {Allow:isBrands?(typeof createBrand==='function'?'GET, POST':'GET'):'GET, POST'});return;
       }
       const origin=req.headers.origin;
       if(origin&&(allowedOrigins.length===0||!allowedOrigins.includes(origin))){
@@ -121,6 +123,20 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
         send(res,401,{error:'UNAUTHENTICATED'});return;
       }
       if(isBrands){
+        if(req.method==='POST'){
+          if(!/^application\\/json(?:\\s*;\\s*charset=utf-8)?$/i.test(
+              req.headers['content-type']??'')){
+            send(res,415,{error:'UNSUPPORTED_MEDIA_TYPE'});return;
+          }
+          const body=await readJson(req);
+          let draft;
+          try{draft=normalizeBrandDraft(body);}catch{
+            send(res,422,{error:'INVALID_BRAND'});return;
+          }
+          const created=await createBrand(principal.uid,draft);
+          send(res,201,{brand:safeBrand(created,principal.uid)});
+          return;
+        }
         if(typeof listBrands!=='function')throw fail(503,'CATALOG_UNAVAILABLE');
         const records=await listBrands(principal.uid);
         if(!Array.isArray(records)||records.length>5)
