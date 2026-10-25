@@ -105,7 +105,23 @@ export function createSupabaseCatalogStore({projectUrl,publishableKey,serviceRol
   async function createProduct(uid,input){
     if(!UUID.test(uid??''))throw error('UNAUTHENTICATED');
     let product;
-    try{product=normalizeProductDraft(input);}catch{throw error('INVALID_PRODUCT');}
+    try{
+      let draft=input;
+      // The trusted HTTP adapter passes the normalized currency:'MXN'.
+      // Only this exact derived constant is tolerated; all other fields
+      // are still checked by normalizeProductDraft.
+      if(input&&typeof input==='object'&&!Array.isArray(input)&&
+          Object.hasOwn(input,'currency')){
+        if(![Object.prototype,null].includes(Object.getPrototypeOf(input)))
+          throw error('INVALID_PRODUCT');
+        const descriptors=Object.getOwnPropertyDescriptors(input);
+        if(Object.values(descriptors).some(d=>!Object.hasOwn(d,'value'))||
+            descriptors.currency.value!=='MXN')throw error('INVALID_PRODUCT');
+        const {currency,...remaining}=input;
+        draft=remaining;
+      }
+      product=normalizeProductDraft(draft);
+    }catch{throw error('INVALID_PRODUCT');}
     // Photo references require a separate verified owner-scoped Storage adapter.
     if(product.photoAssetId)throw error('INVALID_PRODUCT');
     const payload={
