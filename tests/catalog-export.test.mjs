@@ -73,3 +73,13 @@ test('authorization error never creates a download or leaves button disabled',as
   assert.equal(ui.counts.clicks,0);
   assert.equal(ui.button.disabled,false);
 });
+
+test('disposed export controller stays disabled after account switch',async()=>{
+  const ui=setupUI(async()=>[item]);
+  ui.action.dispose();
+  ui.action.setRequest('another-owner');
+  assert.equal(ui.button.disabled,true);
+  ui.trigger();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(ui.counts,{clicks:0,creates:0,revokes:0});
+});
