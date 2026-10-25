@@ -13,6 +13,8 @@ on:
       - 'tests/sql/run-catalog-concurrency.sh'
       - 'v2/sql/pf_v2_brand_write_stage_only.sql'
       - 'tests/sql/catalog-brand-write-assertions.sql'
+      - 'tests/sql/catalog-brand-concurrency-seed.sql'
+      - 'tests/sql/run-brand-concurrency.sh'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
   pull_request:
     paths:
@@ -25,6 +27,8 @@ on:
       - 'tests/sql/run-catalog-concurrency.sh'
       - 'v2/sql/pf_v2_brand_write_stage_only.sql'
       - 'tests/sql/catalog-brand-write-assertions.sql'
+      - 'tests/sql/catalog-brand-concurrency-seed.sql'
+      - 'tests/sql/run-brand-concurrency.sh'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
 jobs:
   catalog-database-isolation:
@@ -67,3 +71,7 @@ jobs:
         run: |
           docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < v2/sql/pf_v2_brand_write_stage_only.sql
           docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-brand-write-assertions.sql
+      - name: Race two independent Business brand creations against final quota slot
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-brand-concurrency-seed.sql
+          bash tests/sql/run-brand-concurrency.sh "${{ job.services.postgres.id }}"
