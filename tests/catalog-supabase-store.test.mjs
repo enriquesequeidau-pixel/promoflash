@@ -174,7 +174,7 @@ test('Supabase brand lookup uses explicit owner filter and strips private column
 test('Supabase brand lookup rejects foreign owner rows and malformed names',async()=>{
   for(const row of [
     {id:BRAND,owner_uid:B,name:'Foreign account'},
-    {id:BRAND,owner_uid:A,name:'\\u202EHidden name'}
+    {id:BRAND,owner_uid:A,name:String.fromCharCode(0x202E)+'Hidden name'}
   ]){
     const {store}=fixture({fetcher:async()=>ok([row])});
     await assert.rejects(store.listBrands(A),{code:'CATALOG_UNAVAILABLE'});
