@@ -1,4 +1,4 @@
-name: PromoFlash v2 brand and product contract QA
+name: PromoFlash v2 brand, product and sandbox catalog QA
 on:
   push:
     branches:
@@ -7,8 +7,10 @@ on:
     paths:
       - 'v2/brand-contract.mjs'
       - 'v2/product-contract.mjs'
+      - 'v2/catalog-sandbox.mjs'
       - 'tests/brand-contract.test.mjs'
       - 'tests/product-contract.test.mjs'
+      - 'tests/catalog-sandbox.test.mjs'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
 jobs:
   brand-and-product-contract:
@@ -24,7 +26,9 @@ jobs:
         run: |
           node --check v2/brand-contract.mjs
           node --check v2/product-contract.mjs
+          node --check v2/catalog-sandbox.mjs
           node --check tests/brand-contract.test.mjs
           node --check tests/product-contract.test.mjs
-      - name: Isolated contract tests
-        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs
+          node --check tests/catalog-sandbox.test.mjs
+      - name: Isolated contract and sandbox tests
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs
