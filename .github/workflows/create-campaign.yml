@@ -1,0 +1,28 @@
+name: Generate PromoFlash campaign artwork
+on:
+  push:
+    branches: [marketing-assets]
+    paths:
+      - .github/workflows/create-campaign.yml
+permissions:
+  contents: write
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate three PNG campaign cards
+        run: |
+          python -m pip install --quiet pillow
+          mkdir -p marketing/scripts marketing/assets
+          python - <<'PY'
+          import base64,zlib,pathlib
+          pathlib.Path('marketing/scripts/generate_campaign.py').write_bytes(zlib.decompress(base64.b64decode('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')))
+          PY
+          python marketing/scripts/generate_campaign.py
+      - name: Commit artwork to marketing branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add marketing/assets marketing/scripts
+          git diff --cached --quiet || (git commit -m "Generate PromoFlash Facebook artwork" && git push)
