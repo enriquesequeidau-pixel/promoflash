@@ -44,8 +44,9 @@ function rpcError(body){
   if(['23514','22023','22P02'].includes(body?.code))return error('INVALID_PRODUCT');
   if(body?.code==='P0001'){
     const message=body?.message;
-    if(message==='PRODUCT_QUOTA'||message==='PLAN_REQUIRED')return error(message);
+    if(['PRODUCT_QUOTA','BRAND_QUOTA','PLAN_REQUIRED'].includes(message))return error(message);
     if(message==='PHOTO_NOT_READY')return error('INVALID_PRODUCT');
+    if(message==='LOGO_NOT_READY')return error('INVALID_BRAND');
   }
   return error('CATALOG_UNAVAILABLE');
 }
@@ -123,6 +124,40 @@ export function createSupabaseCatalogStore({projectUrl,publishableKey,serviceRol
     });
   }
 
+  /** Create a brand using ONLY verified backend identity and transactional 1/5 quota. */
+  async function createBrand(uid,input){
+    if(!UUID.test(uid??''))throw error('UNAUTHENTICATED');
+    let brand;
+    try{brand=normalizeBrandDraft(input);}catch{throw error('INVALID_BRAND');}
+    if(brand.logoAssetId)throw error('INVALID_BRAND');
+    const payload={
+      p_owner_uid:uid,p_name:brand.name,
+      p_primary_color:brand.primaryColor,p_secondary_color:brand.secondaryColor,
+      p_accent_color:brand.accentColor,p_phone:brand.phone,
+      p_commercial_url:brand.commercialUrl,p_style:brand.style,
+      p_logo_asset_id:null
+    };
+    const response=await fetcher(projectUrl+'/rest/v1/rpc/pf_v2_create_brand_trusted',{
+      method:'POST',headers:{...serviceHeaders,'Content-Type':'application/json'},
+      body:JSON.stringify(payload),cache:'no-store',redirect:'error'
+    });
+    if(response?.status!==200)throw rpcError(await jsonOrFail(response));
+    const id=await jsonOrFail(response);
+    if(typeof id!=='string'||!UUID.test(id))throw error('CATALOG_UNAVAILABLE');
+    const url=projectUrl+'/rest/v1/pf_v2_brands?select=id,owner_uid,name'+
+      '&owner_uid=eq.'+uid+'&id=eq.'+id+'&limit=1';
+    const read=await fetcher(url,{method:'GET',headers:serviceHeaders,
+      cache:'no-store',redirect:'error'});
+    if(read?.status!==200)throw error('CATALOG_UNAVAILABLE');
+    const rows=await jsonOrFail(read);
+    if(!Array.isArray(rows)||rows.length!==1||rows[0]?.id!==id||
+        rows[0]?.owner_uid!==uid)throw error('CATALOG_UNAVAILABLE');
+    let name;
+    try{name=normalizeBrandDraft({name:rows[0].name}).name;}
+    catch{throw error('CATALOG_UNAVAILABLE');}
+    return Object.freeze({id,ownerUid:uid,name});
+  }
+
   /** Database RPC atomically rechecks the verified plan, owner and quota. */
   async function createProduct(uid,input){
     if(!UUID.test(uid??''))throw error('UNAUTHENTICATED');
@@ -161,5 +196,5 @@ export function createSupabaseCatalogStore({projectUrl,publishableKey,serviceRol
     return readOne(uid,id);
   }
 
-  return Object.freeze({authenticateBearer,listProducts,listBrands,createProduct});
+  return Object.freeze({authenticateBearer,listProducts,listBrands,createProduct,createBrand});
 }
