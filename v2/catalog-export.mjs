@@ -75,7 +75,7 @@ export function attachCatalogExportButton({button,catalog,request,document:doc,u
   const handler=()=>{void click().catch(()=>{ /* no download on auth/network failure */ });};
   button.addEventListener('click',handler);
   return Object.freeze({
-    setRequest(next){generation++;credential=next;busy=false;button.disabled=false;},
+    setRequest(next){if(!active)return;generation++;credential=next;busy=false;button.disabled=false;},
     dispose(){generation++;active=false;credential=null;button.removeEventListener('click',handler);button.disabled=true;}
   });
 }
