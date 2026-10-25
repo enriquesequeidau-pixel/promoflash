@@ -1,4 +1,4 @@
-name: PromoFlash v2 brand contract QA
+name: PromoFlash v2 brand and product contract QA
 on:
   push:
     branches:
@@ -6,10 +6,12 @@ on:
   pull_request:
     paths:
       - 'v2/brand-contract.mjs'
+      - 'v2/product-contract.mjs'
       - 'tests/brand-contract.test.mjs'
+      - 'tests/product-contract.test.mjs'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
 jobs:
-  brand-contract:
+  brand-and-product-contract:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,6 +21,10 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax
-        run: node --check v2/brand-contract.mjs && node --check tests/brand-contract.test.mjs
+        run: |
+          node --check v2/brand-contract.mjs
+          node --check v2/product-contract.mjs
+          node --check tests/brand-contract.test.mjs
+          node --check tests/product-contract.test.mjs
       - name: Isolated contract tests
-        run: node --test tests/brand-contract.test.mjs
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs
