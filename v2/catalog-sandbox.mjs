@@ -85,6 +85,30 @@ export function createCatalogSandbox({authenticate,ownsBrand,ownsPhoto,makeId=ra
         return publicRecord(record);
       });
     },
+    /**
+     * Copy a product with fresh authorization, ownership and quota checks.
+     * SANDBOX ONLY: in-memory lock is not cross-process transactional.
+     */
+    async duplicate(request,id){
+      const identity=await principal(request);
+      writable(identity);
+      return locked(identity.uid,async()=>{
+        const current=await principal(request);
+        writable(current);
+        if(current.uid!==identity.uid)throw failure(401,'IDENTITY_CHANGED');
+        const source=records.get(id);
+        if(!source||source.ownerUid!==current.uid)throw failure(404,'PRODUCT_NOT_FOUND');
+        const {id:oldId,ownerUid,...product}=source;
+        await related(current,product);
+        const count=[...records.values()].filter(r=>r.ownerUid===current.uid).length;
+        if(count>=PLAN_LIMITS[current.plan].products)throw failure(409,'PRODUCT_QUOTA');
+        const newId=makeId();
+        if(typeof newId!=='string'||!newId||records.has(newId))throw failure(409,'ID_CONFLICT');
+        const record=Object.freeze({id:newId,ownerUid:current.uid,...product});
+        records.set(newId,record);
+        return publicRecord(record);
+      });
+    },
     async update(request,id,draft){
       const identity=await principal(request);
       writable(identity);
