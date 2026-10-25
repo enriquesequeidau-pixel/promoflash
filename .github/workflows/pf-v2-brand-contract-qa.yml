@@ -8,9 +8,11 @@ on:
       - 'v2/brand-contract.mjs'
       - 'v2/product-contract.mjs'
       - 'v2/catalog-sandbox.mjs'
+      - 'v2/catalog-export.mjs'
       - 'tests/brand-contract.test.mjs'
       - 'tests/product-contract.test.mjs'
       - 'tests/catalog-sandbox.test.mjs'
+      - 'tests/catalog-export.test.mjs'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
 jobs:
   brand-and-product-contract:
@@ -27,8 +29,10 @@ jobs:
           node --check v2/brand-contract.mjs
           node --check v2/product-contract.mjs
           node --check v2/catalog-sandbox.mjs
+          node --check v2/catalog-export.mjs
           node --check tests/brand-contract.test.mjs
           node --check tests/product-contract.test.mjs
           node --check tests/catalog-sandbox.test.mjs
+          node --check tests/catalog-export.test.mjs
       - name: Isolated contract and sandbox tests
-        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs
