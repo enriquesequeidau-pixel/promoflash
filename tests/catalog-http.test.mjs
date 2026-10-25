@@ -182,3 +182,24 @@ test('real HTTP: unsupported methods and routes never attempt identity verificat
     assert.deepEqual(calls.auth,[]);
   });
 });
+
+test('real HTTP: malicious owner-scoped read never leaks another tenant',async()=>{
+  await withApi(async({url,auth})=>{
+    const response=await fetch(url,{headers:auth()});
+    assert.equal(response.status,503);
+    assert.equal((await response.json()).error,'CATALOG_UNAVAILABLE');
+  },{listProducts:async()=>[ownedB]});
+});
+test('real HTTP: a service adapter cannot return a product for a different owner',async()=>{
+  await withApi(async({url,auth})=>{
+    const response=await post(url,auth());
+    assert.equal(response.status,503);
+    assert.equal((await response.json()).error,'CATALOG_UNAVAILABLE');
+  },{createProduct:async()=>ownedB});
+});
+test('real HTTP: product missing explicit owner is rejected before returning data',async()=>{
+  await withApi(async({url,auth})=>{
+    const response=await fetch(url,{headers:auth()});
+    assert.equal(response.status,503);
+  },{listProducts:async()=>[{...requestBody,id:'p3',currency:'MXN'}]});
+});
