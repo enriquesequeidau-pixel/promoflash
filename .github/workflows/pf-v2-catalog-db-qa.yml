@@ -7,12 +7,16 @@ on:
       - 'v2/sql/pf_v2_catalog_stage_only.sql'
       - 'tests/sql/catalog-rls-bootstrap.sql'
       - 'tests/sql/catalog-rls-assertions.sql'
+      - 'v2/sql/pf_v2_product_write_stage_only.sql'
+      - 'tests/sql/catalog-product-write-assertions.sql'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
   pull_request:
     paths:
       - 'v2/sql/pf_v2_catalog_stage_only.sql'
       - 'tests/sql/catalog-rls-bootstrap.sql'
       - 'tests/sql/catalog-rls-assertions.sql'
+      - 'v2/sql/pf_v2_product_write_stage_only.sql'
+      - 'tests/sql/catalog-product-write-assertions.sql'
       - '.github/workflows/pf-v2-catalog-db-qa.yml'
 jobs:
   catalog-database-isolation:
@@ -41,3 +45,9 @@ jobs:
       - name: Verify owner isolation, FK integrity and deny browser writes
         run: |
           docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-rls-assertions.sql
+      - name: Install server-only product creation and verified synthetic plans
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < v2/sql/pf_v2_product_write_stage_only.sql
+      - name: Test service-role product writes, quotas and downgrade
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-product-write-assertions.sql
