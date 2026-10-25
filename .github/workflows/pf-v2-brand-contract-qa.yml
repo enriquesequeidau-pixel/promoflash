@@ -10,11 +10,13 @@ on:
       - 'v2/catalog-sandbox.mjs'
       - 'v2/catalog-export.mjs'
       - 'v2/catalog-editor-bridge.mjs'
+      - 'v2/catalog-http.mjs'
       - 'tests/brand-contract.test.mjs'
       - 'tests/product-contract.test.mjs'
       - 'tests/catalog-sandbox.test.mjs'
       - 'tests/catalog-export.test.mjs'
       - 'tests/catalog-editor-bridge.test.mjs'
+      - 'tests/catalog-http.test.mjs'
       - 'tests/catalog-sql-stage.test.mjs'
       - 'v2/sql/pf_v2_catalog_stage_only.sql'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
@@ -35,11 +37,13 @@ jobs:
           node --check v2/catalog-sandbox.mjs
           node --check v2/catalog-export.mjs
           node --check v2/catalog-editor-bridge.mjs
+          node --check v2/catalog-http.mjs
           node --check tests/brand-contract.test.mjs
           node --check tests/product-contract.test.mjs
           node --check tests/catalog-sandbox.test.mjs
           node --check tests/catalog-export.test.mjs
           node --check tests/catalog-editor-bridge.test.mjs
+          node --check tests/catalog-http.test.mjs
           node --check tests/catalog-sql-stage.test.mjs
       - name: Isolated contract and sandbox tests
-        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs tests/catalog-sql-stage.test.mjs
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs tests/catalog-sql-stage.test.mjs tests/catalog-http.test.mjs
