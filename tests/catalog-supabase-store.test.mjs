@@ -28,6 +28,7 @@ function fixture(overrides={}){
       return options.headers.Authorization==='Bearer verified-test-token'
         ?ok({id:A}):ok({error:'invalid_session'},401);
     }
+    if(url.includes('/rest/v1/pf_v2_brands'))return ok([{id:BRAND,owner_uid:A,name:'CAFÉ DE CASA'}]);
     if(url.includes('/rest/v1/rpc/'))return ok(PRODUCT);
     if(url.includes('/rest/v1/pf_v2_products'))return ok([dbProduct]);
     throw Error('UNEXPECTED_BACKEND_URL');
@@ -158,4 +159,29 @@ test('normalized server product accepts only MXN, never client privilege fields'
     await assert.rejects(store.createProduct(A,bad),{code:'INVALID_PRODUCT'});
   }
   assert.equal(calls.length,2);
+});
+
+test('Supabase brand lookup uses explicit owner filter and strips private columns',async()=>{
+  const {store,calls}=fixture();
+  const brands=await store.listBrands(A);
+  assert.deepEqual(brands,[{id:BRAND,ownerUid:A,name:'CAFÉ DE CASA'}]);
+  assert.equal(calls.length,1);
+  assert.match(calls[0].url,/pf_v2_brands\?select=id,owner_uid,name/);
+  assert.match(calls[0].url,/owner_uid=eq\.11111111-1111-4111-8111-111111111111/);
+  assert.equal(calls[0].options.headers.apikey,SERVICE);
+  assert.equal(calls[0].options.cache,'no-store');
+});
+test('Supabase brand lookup rejects foreign owner rows and malformed names',async()=>{
+  for(const row of [
+    {id:BRAND,owner_uid:B,name:'Foreign account'},
+    {id:BRAND,owner_uid:A,name:'\\u202EHidden name'}
+  ]){
+    const {store}=fixture({fetcher:async()=>ok([row])});
+    await assert.rejects(store.listBrands(A),{code:'CATALOG_UNAVAILABLE'});
+  }
+});
+test('Supabase brand lookup rejects unauthenticated owner without network access',async()=>{
+  const {store,calls}=fixture();
+  await assert.rejects(store.listBrands('anonymous'),{code:'UNAUTHENTICATED'});
+  assert.deepEqual(calls,[]);
 });
