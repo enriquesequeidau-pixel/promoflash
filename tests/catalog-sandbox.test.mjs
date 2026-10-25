@@ -94,3 +94,54 @@ test('update preserves ID and record count; delete frees a quota slot',async()=>
 test('sandbox construction fails closed without trusted dependencies',()=>{
   assert.throws(()=>createCatalogSandbox({}),TypeError);
 });
+
+test('duplicate creates an independent product with new ID and preserves private photo reference',async()=>{
+  const s=setup();
+  const source=await s.create('pro',{...base,photoAssetId:PHOTO});
+  const copy=await s.duplicate('pro',source.id);
+  assert.notEqual(copy.id,source.id);
+  assert.deepEqual({...copy,id:source.id},source);
+  assert.equal(Object.isFrozen(copy),true);
+  await s.update('pro',source.id,{...base,name:'Cambiado'});
+  assert.equal((await s.list('pro')).find(p=>p.id===copy.id).name,base.name);
+  await s.remove('pro',source.id);
+  assert.deepEqual((await s.list('pro')).map(p=>p.id),[copy.id]);
+});
+test('duplicate denies Free and cross-account callers without disclosing or altering data',async()=>{
+  const s=setup();
+  const source=await s.create('pro',base);
+  await denied(s.duplicate('free',source.id),403,'PLAN_REQUIRED');
+  await denied(s.duplicate('other',source.id),404,'PRODUCT_NOT_FOUND');
+  await denied(s.duplicate('invalid',source.id),401,'UNAUTHENTICATED');
+  assert.deepEqual(await s.list('other'),[]);
+  assert.equal((await s.list('pro')).length,1);
+});
+test('50 simultaneous duplicate attempts cannot exceed 50 Pro products in one sandbox process',async()=>{
+  const s=setup();
+  const source=await s.create('pro',base);
+  const outcomes=await Promise.allSettled(Array.from({length:50},()=>s.duplicate('pro',source.id)));
+  assert.equal(outcomes.filter(x=>x.status==='fulfilled').length,49);
+  assert.equal(outcomes.filter(x=>x.status==='rejected'&&x.reason.code==='PRODUCT_QUOTA').length,1);
+  assert.equal((await s.list('pro')).length,50);
+});
+test('duplicate of a missing source returns 404 and never creates a record',async()=>{
+  const s=setup();
+  await denied(s.duplicate('pro','missing'),404,'PRODUCT_NOT_FOUND');
+  assert.deepEqual(await s.list('pro'),[]);
+});
+test('duplicate rechecks ownership of private brand and photo before copying',async()=>{
+  let ownsBrand=true,ownsPhoto=true,seq=0;
+  const s=createCatalogSandbox({
+    authenticate:async()=>({uid:'owner-a',plan:'pro'}),
+    ownsBrand:async()=>ownsBrand,
+    ownsPhoto:async()=>ownsPhoto,
+    makeId:()=>String(++seq)
+  });
+  const source=await s.create('pro',{...base,photoAssetId:PHOTO});
+  ownsBrand=false;
+  await denied(s.duplicate('pro',source.id),404,'BRAND_NOT_FOUND');
+  ownsBrand=true;
+  ownsPhoto=false;
+  await denied(s.duplicate('pro',source.id),404,'PHOTO_NOT_FOUND');
+  assert.equal((await s.list('pro')).length,1);
+});
