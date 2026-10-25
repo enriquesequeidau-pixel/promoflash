@@ -124,7 +124,7 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
       }
       if(isBrands){
         if(req.method==='POST'){
-          if(!/^application\\/json(?:\\s*;\\s*charset=utf-8)?$/i.test(
+          if(!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
               req.headers['content-type']??'')){
             send(res,415,{error:'UNSUPPORTED_MEDIA_TYPE'});return;
           }
