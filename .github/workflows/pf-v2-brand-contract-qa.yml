@@ -15,6 +15,8 @@ on:
       - 'tests/catalog-sandbox.test.mjs'
       - 'tests/catalog-export.test.mjs'
       - 'tests/catalog-editor-bridge.test.mjs'
+      - 'tests/catalog-sql-stage.test.mjs'
+      - 'v2/sql/pf_v2_catalog_stage_only.sql'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
 jobs:
   brand-and-product-contract:
@@ -38,5 +40,6 @@ jobs:
           node --check tests/catalog-sandbox.test.mjs
           node --check tests/catalog-export.test.mjs
           node --check tests/catalog-editor-bridge.test.mjs
+          node --check tests/catalog-sql-stage.test.mjs
       - name: Isolated contract and sandbox tests
-        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs tests/catalog-sql-stage.test.mjs
