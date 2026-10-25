@@ -143,11 +143,11 @@ test('changing session during delayed brand lookup prevents stale editor mutatio
   let release;
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client);
-    ui.click();await settle(ui);
-    assert.equal(calls.brands.length,1);
+    ui.click();await until(()=>calls.brands.length===1,'delayed brand lookup');
     ui.action.setRequest('owner-two-token');
     release(BRANDS_A);
-    await settle(ui);
+    // Let the in-flight HTTP response settle after the account changed.
+    await new Promise(resolve=>setTimeout(resolve,50));
     assert.equal(ui.categoryClicks,0);
     assert.equal(ui.inputEvents,0);
     assert.equal(ui.button.disabled,false);
