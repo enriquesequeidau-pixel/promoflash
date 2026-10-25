@@ -1,0 +1,140 @@
+/* PromoFlash neon identity, 2026-10-25.
+   Brand-only layer loaded AFTER legacy styles. Functional JS and payment/auth logic untouched.
+   Color targets: night #150a2c, violet #8237f5, lime #c7ff35. */
+:root{--pf-night:#150a2c;--pf-deep:#0e061e;--pf-violet:#8237f5;--pf-lime:#c7ff35;--pf-lavender:#d7c5ff;--pf-ink:#221435;--pf-paper:#faf8ff}
+body.pf-brand{accent-color:var(--pf-violet)}
+body.pf-brand :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--pf-lime);outline-offset:3px}
+body.pf-brand .brand-symbol{display:block;width:44px;height:44px;flex:none;object-fit:contain;filter:drop-shadow(0 0 11px #993bff5c)}
+body.pf-brand .brand-label{display:inline-flex;align-items:baseline;white-space:nowrap}
+body.pf-brand .brand-promo{color:#fff!important}
+body.pf-brand .brand-flash{color:var(--pf-lime)!important}
+body.pf-brand .brand-symbol + .brand-label{margin-left:9px}
+
+/* Homepage: dark, high-contrast hero matching Facebook creative. */
+body.pf-landing{background:var(--pf-night);color:#fff;--ink:var(--pf-ink);--purple:var(--pf-violet);--lime:var(--pf-lime);--cream:var(--pf-paper)}
+.pf-landing .announcement{background:#0d061e;border-bottom:1px solid #6938b547;color:#ede5ff}
+.pf-landing .announcement a{color:var(--pf-lime)}
+.pf-landing .topbar{background:#160b30f5;border-bottom:1px solid #9470e331;box-shadow:0 12px 36px #0b041524}
+.pf-landing .logo{font-size:25px;font-weight:950;letter-spacing:-1.25px;color:#fff}
+.pf-landing .navlinks{color:#e5dafa}
+.pf-landing .navlinks a:hover{color:var(--pf-lime)}
+.pf-landing .btn-primary,.pf-landing .navcta{background:var(--pf-lime);color:var(--pf-night);box-shadow:0 9px 26px #c7ff3524}
+.pf-landing .btn-lime{background:var(--pf-lime);color:#130921;box-shadow:0 16px 42px #c7ff3533}
+.pf-landing .btn-dark{background:#27134f;color:#fff}
+.pf-landing .hero{position:relative;isolation:isolate;padding-top:75px;padding-bottom:85px}
+.pf-landing .hero:before{content:"";position:absolute;z-index:-3;pointer-events:none;inset:0 -15%;background:radial-gradient(circle at 78% 43%,#7830ed70,transparent 37%),radial-gradient(circle at 14% 5%,#5433a63a,transparent 42%);filter:blur(4px)}
+.pf-landing .hero h1{color:#fff;text-shadow:0 5px 35px #11052255}
+.pf-landing .hero .brush{color:var(--pf-lime)}
+.pf-landing .hero .brush:after{background:var(--pf-violet);opacity:.92;z-index:-1;height:9px}
+.pf-landing .eyebrow{background:#382060;border:1px solid #7043aa;color:#e3cfff}
+.pf-landing .eyebrow .dot{background:var(--pf-lime);box-shadow:0 0 0 4px #c7ff3526}
+.pf-landing .hero-lede{color:#d4cce9}
+.pf-landing .hero-lede b{color:#fff}
+.pf-landing .trust,.pf-landing .mini-features{color:#e7dafb}
+.pf-landing .check{background:#3d6a1c;color:var(--pf-lime)}
+.pf-landing .hero-bg-circle{background:radial-gradient(circle at 40% 35%,#a863ff 2%,#5520bd 50%,#36116d 73%,#1a0a3a 88%);box-shadow:0 0 95px #9d4bff79}
+.pf-landing .hero-rays{opacity:.21;filter:hue-rotate(25deg)}
+.pf-landing .poster{border-color:#fff;box-shadow:0 28px 80px #080316a8,0 0 35px #a53bff45}
+.pf-landing .float-tag{background:#381768;border:1px solid #9264e0;color:#fff;box-shadow:0 20px 45px #09021788}
+.pf-landing .float-tag.bottom{background:var(--pf-lime);border:0;color:#170b31;box-shadow:0 14px 36px #c7ff3536}
+.pf-landing .ticker{background:var(--pf-lime);color:#160a2b;border-color:#9dec1d}
+.pf-landing .samples,.pf-landing .pricing,.pf-landing .faq{background:var(--pf-paper);color:var(--pf-ink);border-radius:40px}
+.pf-landing .samples{margin-top:30px}
+.pf-landing .section-head em,.pf-landing .how h2 em{color:#7025dd}
+.pf-landing .kicker{color:#7433d8}
+.pf-landing .sample{border:1px solid #e8dafa;box-shadow:0 20px 48px #4919a512}
+.pf-landing .sample-tag{background:#efe5ff;color:#6524ca!important}
+.pf-landing .how{background:#eee8ff;color:var(--pf-ink)}
+.pf-landing .step{border-color:#e3d8ff;box-shadow:0 16px 32px #5939ad0e}
+.pf-landing .step-one{background:#ddd0ff}
+.pf-landing .step-two{background:#dcffa6}
+.pf-landing .step-three{background:#f4dfff}
+.pf-landing .purple-band{background:linear-gradient(125deg,#29115b,#170b35 57%,#35116d)}
+.pf-landing .purple-band .kicker.white{color:var(--pf-lime)}
+.pf-landing .band-art{background:radial-gradient(circle,#8546fa 2%,#422083 52%,transparent 72%)}
+.pf-landing .pricing{margin-top:35px}
+.pf-landing .price-card.current{border-color:#7434e8;box-shadow:0 20px 48px #7f39ec14}
+.pf-landing .price-card.coming{background:#eee6ff}
+.pf-landing .price-card .btn-dark{background:var(--pf-night);color:#fff}
+.pf-landing .faq{margin-top:14px;margin-bottom:22px}
+.pf-landing .lead-shell{background:linear-gradient(120deg,#d6ff9a,#e8dbff);border:1px solid #b6da91;color:#291839;box-shadow:0 20px 50px #0003}
+.pf-landing .lead-form{box-shadow:0 20px 46px #37166a24}
+.pf-landing .lead-form button{background:#28134e;color:#fff}
+.pf-landing .lead-form .consent{color:#544761}
+.pf-landing .final-cta{background:linear-gradient(105deg,#4617a5,#8135ee 65%,#4c1b99)}
+.pf-landing .final-cta .btn-lime{box-shadow:0 14px 44px #c7ff3540}
+.pf-landing .footer{background:#0d061d;border-top:1px solid #5a32874a;color:#fff}
+.pf-landing .footer .logo{font-size:23px}
+.pf-landing .footer-inner p,.pf-landing .foot-end{color:#bcb0d4}
+.pf-landing .footer-inner>div:last-child{color:#e6d7ff}
+.pf-landing .footer a:hover{color:var(--pf-lime)}
+
+/* Editor: same brand header and accent, with accessible light work area. */
+body.pf-editor{background:#f8f6ff;color:var(--pf-ink)}
+.pf-editor .site-header{background:#170b31;color:#fff;border-bottom:1px solid #8549d2}
+.pf-editor .wordmark{font-size:25px;letter-spacing:-1.1px;color:#fff}
+.pf-editor .wordmark sup{color:#c1a5f6}
+.pf-editor .head-right{color:#e3d7f9}
+.pf-editor .head-link{color:#fff;background:#ffffff10;border-color:#8267b478}
+.pf-editor .head-link:hover{background:#ffffff24}
+.pf-editor .intro h1{color:#25123f}
+.pf-editor .intro h1 em{color:#7430dc}
+.pf-editor .eyebrow{color:#6f2ad3}
+.pf-editor .sparkle{color:#8926ef}
+.pf-editor .setup-card{border-color:#e5d8fb;box-shadow:0 14px 40px #4f209a0e}
+.pf-editor .step-heading .step-num{background:#eadeff;color:#5c22b1}
+.pf-editor .category.active{border-color:#7834e0;background:#f0e7ff;color:#5426a6}
+.pf-editor .category.active .category-icon{color:#782de2}
+.pf-editor .upload-area{border-color:#8d4de7;background:#f6f0ff}
+.pf-editor .upload-area:hover{background:#e9ddff}
+.pf-editor .generate-button{background:#281150;color:#fff;box-shadow:0 7px 0 #43227824}
+.pf-editor .generate-button:hover{background:#6a21c8}
+.pf-editor .generate-button span:first-child{color:var(--pf-lime)}
+.pf-editor .all-button{background:var(--pf-lime);color:#1b1524}
+.pf-editor .all-button:hover{background:#b7f923}
+.pf-editor .footer span:first-child{color:#612fb2}
+
+/* Account page: reuse visual identity without modifying its auth/CSP. */
+body.pf-account{background:#f8f6ff;color:var(--pf-ink)}
+.pf-account header{background:#170b31;color:#fff;border-bottom-color:#8250d7}
+.pf-account header a:first-child{display:inline-flex;align-items:center;font-weight:950;letter-spacing:-.6px;color:#fff;text-decoration:none}
+.pf-account header a:last-child{color:var(--pf-lime)}
+.pf-account .brand-symbol{width:38px;height:38px;margin-right:10px}
+.pf-account .brand-promo{color:#fff}
+.pf-account .brand-flash{color:var(--pf-lime)}
+.pf-account h1{color:#25123f}
+.pf-account .eyebrow{color:#7430dc}
+.pf-account .card{border-color:#e7d9fc;box-shadow:0 24px 52px #40127313}
+.pf-account button{background:#5e23c4;color:#fff}
+.pf-account button:hover:not(:disabled){background:#45139d}
+.pf-account .pill{background:#eee5ff;color:#5b24ae}
+.pf-account button.outline{background:#eee5ff;color:#512795}
+.pf-account #resetPassword{background:transparent;color:#5b24ae}
+.pf-account #resetPassword:hover{background:transparent;color:#3d147e}
+.pf-account footer{color:#6d6281}
+
+/* Plain legal pages: visual wrapper only, legal wording unchanged. */
+body.pf-legal{background:#faf8ff;color:#26143d}
+.pf-legal>a:first-child{display:inline-flex;align-items:center;border-radius:999px;background:#24114a;color:#e7ffab!important;padding:8px 17px;font-weight:700;text-decoration:none}
+.pf-legal h1{color:#331362}
+.pf-legal h2{color:#5e25c3}
+.pf-legal a{color:#6730c6}
+
+@media(max-width:800px){
+  body.pf-brand .brand-symbol{width:38px;height:38px}
+  .pf-landing .samples,.pf-landing .pricing,.pf-landing .faq{border-radius:24px}
+  .pf-landing .hero{padding-top:55px}
+  .pf-landing .hero:before{inset:-30px -5%}
+}
+@media(max-width:600px){
+  .pf-landing .logo,.pf-editor .wordmark{font-size:21px}
+  body.pf-brand .brand-symbol{width:35px;height:35px}
+  .pf-landing .hero{padding-top:47px;padding-bottom:36px}
+  .pf-landing .hero:before{inset:-15px -2%}
+  .pf-landing .samples,.pf-landing .pricing,.pf-landing .faq{border-radius:16px}
+  .pf-landing .samples{margin-top:12px}
+  .pf-landing .float-tag.top{right:0}
+  .pf-account header a:first-child{font-size:17px}
+  .pf-account .brand-symbol{width:31px;height:31px;margin-right:5px}
+}
+@media(prefers-reduced-motion:reduce){.pf-landing .btn:hover,.pf-editor .generate-button:hover{transform:none}}
