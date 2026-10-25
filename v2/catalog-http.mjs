@@ -7,8 +7,10 @@
  * Never expose this module as an anonymous Free editor endpoint.
  */
 import {normalizeProductDraft} from './product-contract.mjs';
+import {normalizeBrandDraft} from './brand-contract.mjs';
 
-const PATH='/v2/catalog/products';
+const PRODUCTS_PATH='/v2/catalog/products';
+const BRANDS_PATH='/v2/catalog/brands';
 const MAX_BODY_BYTES=16_384;
 const AUTH=/^Bearer ([A-Za-z0-9._~-]{8,4096})$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -70,23 +72,39 @@ function safeProduct(row,expectedOwnerUid){
   return {id:row.id,...draft};
 }
 
+function safeBrand(row,expectedOwnerUid){
+  if(!row||typeof row!=='object'||Array.isArray(row)||
+      row.ownerUid!==expectedOwnerUid||!UUID.test(row.ownerUid??'')||
+      typeof row.id!=='string'||!UUID.test(row.id))
+    throw fail(503,'CATALOG_UNAVAILABLE');
+  let name;
+  try{name=normalizeBrandDraft({name:row.name}).name;}
+  catch{throw fail(503,'CATALOG_UNAVAILABLE');}
+  return {id:row.id,name};
+}
+
 /**
  * authenticateBearer(token) must call the identity provider server-side and
  * resolve {uid} from a verified, unexpired session. Never decode JWT blindly.
  * listProducts(uid) may include ownerUid, but it MUST be owner-filtered.
  * createProduct(uid,draft) must recheck plan and quota in ONE DB transaction.
  */
-export function createCatalogHttpHandler({authenticateBearer,listProducts,createProduct,
+export function createCatalogHttpHandler({authenticateBearer,listProducts,listBrands,createProduct,
   allowedOrigins=[]}={}){
   if([authenticateBearer,listProducts,createProduct].some(x=>typeof x!=='function')||
+      (listBrands!==undefined&&typeof listBrands!=='function')||
       !Array.isArray(allowedOrigins)||allowedOrigins.some(x=>
         typeof x!=='string'||!/^https:\/\/[a-z0-9.-]+(?::[0-9]{1,5})?$/i.test(x)))
     throw new TypeError('Trusted catalog HTTP dependencies required');
   return async function catalogHandler(req,res){
     try{
-      if(req.url!==PATH){send(res,404,{error:'NOT_FOUND'});return;}
-      if(req.method!=='GET'&&req.method!=='POST'){
-        send(res,405,{error:'METHOD_NOT_ALLOWED'},{Allow:'GET, POST'});return;
+      const isProducts=req.url===PRODUCTS_PATH;
+      const isBrands=req.url===BRANDS_PATH;
+      if(!isProducts&&!isBrands){send(res,404,{error:'NOT_FOUND'});return;}
+      if((isBrands&&req.method!=='GET')||
+          (isProducts&&req.method!=='GET'&&req.method!=='POST')){
+        send(res,405,{error:'METHOD_NOT_ALLOWED'},
+          {Allow:isBrands?'GET':'GET, POST'});return;
       }
       const origin=req.headers.origin;
       if(origin&&(allowedOrigins.length===0||!allowedOrigins.includes(origin))){
@@ -101,6 +119,16 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,create
       }
       if(!principal||typeof principal.uid!=='string'||!UUID.test(principal.uid)){
         send(res,401,{error:'UNAUTHENTICATED'});return;
+      }
+      if(isBrands){
+        if(typeof listBrands!=='function')throw fail(503,'CATALOG_UNAVAILABLE');
+        const records=await listBrands(principal.uid);
+        if(!Array.isArray(records)||records.length>5)
+          throw fail(503,'CATALOG_UNAVAILABLE');
+        const brands=records.map(row=>safeBrand(row,principal.uid));
+        if(new Set(brands.map(b=>b.id)).size!==brands.length)
+          throw fail(503,'CATALOG_UNAVAILABLE');
+        send(res,200,{brands});return;
       }
       if(req.method==='GET'){
         const records=await listProducts(principal.uid);
