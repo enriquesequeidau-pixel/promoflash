@@ -1,0 +1,54 @@
+name: Use approved PromoFlash logo
+on:
+  push:
+    branches: [feat/brand-refresh-20261025]
+    paths: [.github/workflows/brand-logo.yml]
+permissions:
+  contents: write
+jobs:
+  official-mark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/brand-refresh-20261025
+      - name: Prepare approved P-plus-lightning logo from Facebook page artwork
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          art=Image.open('brand-official-facebook.png').convert('RGBA')
+          assert art.width == art.height and art.width >= 160
+          # The approved image includes a circular border and wordmark.
+          # Crop its original P-and-lightning glyph for compact navigation.
+          k=art.width/200
+          box=tuple(round(t*k) for t in (46,11,156,121))
+          tile=art.crop(box).resize((256,256),Image.Resampling.LANCZOS)
+          alpha=Image.new('L',tile.size,0)
+          d=ImageDraw.Draw(alpha)
+          d.ellipse((3,3,253,253),fill=255)
+          tile.putalpha(alpha)
+          tile.save('brand-mark.png',optimize=True)
+          print('Extracted navigation icon from approved page logo: 256x256')
+          for filename, expected in [('index.html',2),('editor.html',1),('cuenta.html',1)]:
+              p=Path(filename)
+              s=p.read_text()
+              old='<img class="brand-symbol" src="brand-symbol.svg"'
+              current='<img class="brand-symbol" src="brand-mark.png"'
+              if s.count(old) == expected:
+                  s=s.replace(old,current)
+              else:
+                  assert s.count(current)==expected,(filename,s.count(old),s.count(current))
+              p.write_text(s)
+          for name in ['index.html','editor.html','cuenta.html']:
+              assert 'src="brand-mark.png"' in Path(name).read_text()
+          PY
+      - name: Commit approved icon and references
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add brand-mark.png index.html editor.html cuenta.html
+          git diff --cached --quiet || (git commit -m 'Use cropped approved PromoFlash logo across navigation' && git push)
