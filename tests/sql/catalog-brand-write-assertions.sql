@@ -1,5 +1,9 @@
 -- Must run after product write SQL tests on synthetic PostgreSQL only.
--- Owner A: 1 brand, Free after downgrade. Owner B: 1 brand, expired Business.
+-- Owner A: 1 brand. Prior concurrency seed may have restored Pro;
+-- explicitly set Free to make this check independent of earlier suites.
+-- Owner B: 1 brand, expired Business.
+update public.pf_v2_plan_access set plan='free'
+  where owner_uid='11111111-1111-4111-8111-111111111111';
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 do $test$
