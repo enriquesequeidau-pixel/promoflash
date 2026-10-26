@@ -32,4 +32,4 @@ jobs:
           node --check editor-pro.mjs
           node --check v2/pro-editor-core.mjs
       - name: Tests
-        run: node --test tests/pro-editor-core.test.mjs tests/pro-editor-contract.test.mjs
+        run: node --test tests/pro-editor-core.test.mjs tests/pro-editor-contract.test.mjs tests/pro-mexico-tools.test.mjs
