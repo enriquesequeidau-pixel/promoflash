@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="editor.css">
   <link rel="icon" type="image/svg+xml" href="brand-symbol.svg">
   <link rel="stylesheet" href="brand.css?v=20261025">
+  <style>.pf-pro-panel{max-width:1180px;margin:0 auto 24px;padding:20px;border:1px solid #d7c8fb;border-radius:18px;background:#f9f6ff;color:#24203e}.pf-pro-head{display:flex;gap:12px;align-items:start;justify-content:space-between}.pf-pro-head strong{font-size:19px}.pf-pro-head p{margin:5px 0 10px;font-size:14px}.pf-pro-head a{color:#5b35b3;font-weight:700}.pf-pro-panel label{display:block;font-weight:700;margin:8px 0}.pf-pro-panel select,.pf-pro-panel button{padding:10px 12px;border-radius:9px;border:1px solid #c4adee;font:inherit}.pf-pro-panel button{cursor:pointer;background:white;margin:5px}.pf-pro-panel button:disabled{opacity:.6}.pf-pro-panel .pf-pro-suggestions{display:grid;gap:8px;margin-top:12px}.pf-pro-panel .pf-pro-suggestions button{text-align:left;white-space:normal;overflow-wrap:anywhere}.pf-pro-panel small,.pf-pro-note{display:block;font-size:12px;color:#51496a;margin:10px 0 0}.pf-pro-panel [hidden]{display:none!important}@media(max-width:600px){.pf-pro-head{display:block}.pf-pro-panel{padding:16px}}</style>
 </head>
 <body class="pf-brand pf-editor">
 <header class="site-header"><div class="head-inner">
@@ -20,6 +21,18 @@
     <div class="eyebrow"><span class="sparkle">✳</span> DISEÑOS EN UN CLIC <span class="eyebrow-rule"></span> SIN SABER DISEÑAR</div>
     <h1>Tu producto. <em>Tres promos increíbles.</em></h1>
     <p>Completa lo esencial y listo: te damos tres diseños diferentes para publicar. Diseña y descarga gratis. Tus fotos se procesan en este dispositivo, sin subirlas a un servidor.</p>
+  </section>
+  <section class="pf-pro-panel" aria-label="Herramientas Pro opcionales">
+    <div class="pf-pro-head"><div><strong>✦ Estudio Pro</strong><p id="pfProStatus" role="status" aria-live="polite">Verificando sesión…</p></div><a href="cuenta.html">Mi cuenta Pro ↗</a></div>
+    <div id="pfProActions" hidden>
+      <label for="pfProVoice">Estilo de tus textos comerciales</label>
+      <select id="pfProVoice"><option value="cercano">Cercano</option><option value="elegante">Elegante</option><option value="energetico">Enérgico</option></select>
+      <button id="pfProGenerate" type="button">Generar 3 titulares Pro</button>
+      <button id="pfProRefresh" type="button">Actualizar acceso</button>
+      <div id="pfProSuggestions"></div>
+      <small>Usamos el nombre de producto y tienda de este editor. Tus fotografías permanecen en este dispositivo; los textos se verifican en el servidor.</small>
+    </div>
+    <p class="pf-pro-note">Editor Free siempre disponible. Las nuevas suscripciones y cobros Pro todavía no están habilitados.</p>
   </section>
   <div class="workbench">
     <section class="setup" aria-label="Datos de tu promoción">
@@ -70,5 +83,6 @@
 <script src="config.js"></script>
 <script src="analytics-editor.js" defer></script>
 <script src="editor.js" defer></script>
+<script type="module" src="editor-pro.mjs"></script>
 </body>
 </html>
