@@ -49,7 +49,7 @@ test('real HTTP POST creates branded profile with owner derived from verified se
       accentColor:'#596BDB',phone:'',commercialUrl:'',
       style:'catalog',logoAssetId:null
     });
-    assert.equal(calls.auth.length,1);
+    assert.equal(calls.auth.length,2); // initial identity + pre-write revalidation
   });
 });
 test('real HTTP POST cannot set owner, plan or payment verification in JSON',async()=>{
