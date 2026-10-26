@@ -36,6 +36,11 @@ async function authenticated() {
   if (error || !user || user.id !== userId) throw new Error('AUTH_REQUIRED');
   return user;
 }
+function isAuthFailure(error) {
+  // Supabase/PostgREST can reject an expired JWT after getUser() succeeds.
+  // Treat HTTP 401 (not generic 403/RLS denials) as session revocation.
+  return error?.message === 'AUTH_REQUIRED' || Number(error?.status) === 401 || error?.code === 'PGRST301';
+}
 function render(items) {
   list.replaceChildren();
   if (!items.length) { tell('Catálogo vacío. Guarda tu primer producto.'); return; }
@@ -77,7 +82,7 @@ async function refresh() {
     render((data || []).map(item => ({ ...normalizeCatalogDraft(item), id: item.id })));
   } catch (error) {
     if (version !== epoch || request !== refreshSerial) return;
-    if (error?.message === 'AUTH_REQUIRED') {
+    if (isAuthFailure(error)) {
       // A revoked session must not leave another account's private rows visible.
       clear();
       tell('Tu sesión terminó. Inicia sesión nuevamente para ver tu catálogo.');
@@ -133,7 +138,7 @@ async function run(operation) {
     await refresh();
   } catch (error) {
     if (version === accountEpoch) {
-      if (error?.message === 'AUTH_REQUIRED') {
+      if (isAuthFailure(error)) {
         // Fail closed if a write is attempted after server-side revocation.
         clear();
         tell('Tu sesión terminó. Inicia sesión nuevamente para guardar cambios.');
