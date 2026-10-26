@@ -131,6 +131,9 @@ async function run(operation) {
   const version = accountEpoch;
   try {
     const user = await authenticated();
+    // A sign-out and new sign-in can finish while getUser() is pending.
+    // Never begin a write from a previous authentication epoch.
+    if (version !== accountEpoch || userId !== user.id) return;
     await operation(user, version);
     // A token refresh may have reverified the same user during the write.
     // Refresh that user's catalog even if the earlier request epoch changed.
