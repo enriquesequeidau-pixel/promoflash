@@ -24,6 +24,7 @@ on:
       - 'tests/catalog-brand-supabase-store.test.mjs'
       - 'tests/catalog-editor-http-integration.test.mjs'
       - 'tests/catalog-editor-session-race.test.mjs'
+      - 'tests/catalog-post-auth-race.test.mjs'
       - 'tests/catalog-sql-stage.test.mjs'
       - 'v2/sql/pf_v2_catalog_stage_only.sql'
       - '.github/workflows/pf-v2-brand-contract-qa.yml'
@@ -58,6 +59,7 @@ jobs:
           node --check tests/catalog-brand-supabase-store.test.mjs
           node --check tests/catalog-editor-http-integration.test.mjs
           node --check tests/catalog-editor-session-race.test.mjs
+          node --check tests/catalog-post-auth-race.test.mjs
           node --check tests/catalog-sql-stage.test.mjs
       - name: Isolated contract and sandbox tests
-        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs tests/catalog-sql-stage.test.mjs tests/catalog-http.test.mjs tests/catalog-supabase-store.test.mjs tests/catalog-editor-http-integration.test.mjs tests/catalog-editor-session-race.test.mjs tests/catalog-brand-http.test.mjs tests/catalog-brand-supabase-store.test.mjs
+        run: node --test tests/brand-contract.test.mjs tests/product-contract.test.mjs tests/catalog-sandbox.test.mjs tests/catalog-export.test.mjs tests/catalog-editor-bridge.test.mjs tests/catalog-sql-stage.test.mjs tests/catalog-http.test.mjs tests/catalog-supabase-store.test.mjs tests/catalog-editor-http-integration.test.mjs tests/catalog-editor-session-race.test.mjs tests/catalog-brand-http.test.mjs tests/catalog-brand-supabase-store.test.mjs tests/catalog-post-auth-race.test.mjs
