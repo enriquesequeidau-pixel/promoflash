@@ -159,7 +159,6 @@ def run():
             stale.on('pageerror', lambda error: stale_errors.append(str(error)))
             stale.goto(base + '/editor.html', wait_until='load')
             stale.locator('#resultGallery canvas').first.wait_for()
-            attach_opt_in(stale)
             untouched = fields(stale)
             stale.evaluate("""() => {
               const realFetch = window.fetch.bind(window);
@@ -172,6 +171,7 @@ def run():
                 return realFetch(url,opts);
               };
             }""")
+            attach_opt_in(stale)
             stale.locator('#catalogPick').click()
             stale.wait_for_function("typeof window.__releaseBrand === 'function'")
             stale.evaluate("""() => {
