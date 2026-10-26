@@ -119,3 +119,52 @@ test('save response cannot select an old account product after account switch', 
   assert.equal(app.state().currentId, null);
   assert.equal(nodes.pfCatalogSave.textContent, 'Guardar producto');
 });
+
+
+test('revoked session clears rendered private products during catalog refresh', async () => {
+  const { app, nodes } = harness();
+  let authenticatedUser = { id: 'user-a' };
+  app.setClient({
+    auth: { getUser: async () => ({ data: { user: authenticatedUser }, error: null }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => ({
+        data: [{ id: 'item-a', name: 'Private', brand: 'Brand', price: '1' }],
+        error: null
+      })
+    })
+  });
+  await app.verify();
+  assert.equal(nodes.pfCatalogList.rows.length, 1);
+  authenticatedUser = null; // server-side session revocation without auth callback
+  await app.refresh();
+  assert.equal(nodes.pfCatalogList.rows.length, 0);
+  assert.equal(nodes.pfCatalogControls.hidden, true);
+  assert.equal(app.state().userId, null);
+  assert.match(nodes.pfCatalogStatus.textContent, /sesión terminó/);
+});
+
+test('revoked session blocks save and hides previously loaded private products', async () => {
+  const { app, nodes } = harness();
+  let authenticatedUser = { id: 'user-a' };
+  let mutations = 0;
+  app.setClient({
+    auth: { getUser: async () => ({ data: { user: authenticatedUser }, error: null }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => ({
+        data: [{ id: 'item-a', name: 'Private', brand: 'Brand', price: '1' }],
+        error: null
+      }),
+      insert() { mutations++; return this; }, update() { mutations++; return this; }
+    })
+  });
+  await app.verify();
+  assert.equal(nodes.pfCatalogList.rows.length, 1);
+  authenticatedUser = null;
+  await app.saveItem();
+  assert.equal(mutations, 0);
+  assert.equal(nodes.pfCatalogList.rows.length, 0);
+  assert.equal(nodes.pfCatalogControls.hidden, true);
+  assert.equal(app.state().userId, null);
+});
