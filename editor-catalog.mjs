@@ -14,10 +14,11 @@ const controls = $('pfCatalogControls');
 const list = $('pfCatalogList');
 const saveButton = $('pfCatalogSave');
 const newButton = $('pfCatalogNew');
-let client = null, userId = null, currentId = null, epoch = 0, busy = false;
+let client = null, userId = null, currentId = null, epoch = 0, refreshSerial = 0, busy = false;
 function tell(message) { status.textContent = message; }
 function clear() {
   ++epoch;
+  ++refreshSerial;
   userId = null;
   currentId = null;
   controls.hidden = true;
@@ -64,31 +65,49 @@ function render(items) {
 async function refresh() {
   if (!client) return;
   const version = epoch;
+  const request = ++refreshSerial;
   try {
     const user = await authenticated();
     const { data, error } = await client.from('pf_catalog_items')
       .select(COLUMNS).eq('user_id', user.id)
       .order('updated_at', { ascending: false }).limit(100);
-    if (version !== epoch || user.id !== userId) return;
+    if (version !== epoch || request !== refreshSerial || user.id !== userId) return;
     if (error) throw error;
     render((data || []).map(item => ({ ...normalizeCatalogDraft(item), id: item.id })));
   } catch {
-    if (version === epoch) tell('No se pudo cargar el catálogo. Revisa tu sesión o la configuración.');
+    if (version === epoch && request === refreshSerial) tell('No se pudo cargar el catálogo. Revisa tu sesión o la configuración.');
   }
 }
 async function verify() {
-  clear();
-  const version = epoch;
-  if (!client) return;
+  // Hide old account rows immediately, but preserve the selected draft on
+  // same-user token refresh so "Actualizar" cannot silently become "Crear".
+  const version = ++epoch;
+  ++refreshSerial;
+  controls.hidden = true;
+  list.replaceChildren();
+  if (!client) { clear(); return; }
   try {
     const { data: { user }, error } = await client.auth.getUser();
     if (version !== epoch) return;
-    if (error || !user) { tell('Inicia sesión en Mi cuenta para guardar productos en la nube.'); return; }
+    if (error || !user) {
+      clear();
+      tell('Inicia sesión en Mi cuenta para guardar productos en la nube.');
+      return;
+    }
+    if (user.id !== userId) {
+      currentId = null;
+      saveButton.textContent = 'Guardar producto';
+    }
     userId = user.id;
     controls.hidden = false;
     tell('Cargando catálogo privado…');
     await refresh();
-  } catch { if (version === epoch) tell('No se pudo verificar la sesión.'); }
+  } catch {
+    if (version === epoch) {
+      clear();
+      tell('No se pudo verificar la sesión.');
+    }
+  }
 }
 async function run(operation) {
   if (busy || !userId) return;
@@ -98,8 +117,10 @@ async function run(operation) {
   const version = epoch;
   try {
     const user = await authenticated();
-    await operation(user);
-    if (version !== epoch || userId !== user.id) return;
+    await operation(user, version);
+    // A token refresh may have reverified the same user during the write.
+    // Refresh that user's catalog even if the earlier request epoch changed.
+    if (userId !== user.id) return;
     await refresh();
   } catch {
     if (version === epoch) tell('No se pudo guardar el cambio. Verifica tu conexión y vuelve a intentar.');
@@ -110,7 +131,7 @@ async function run(operation) {
   }
 }
 async function saveItem() {
-  await run(async user => {
+  await run(async (user, version) => {
     const draft = readCatalogDraft(document);
     let query;
     if (currentId) {
@@ -121,6 +142,7 @@ async function saveItem() {
     }
     const { data, error } = await query.select('id').single();
     if (error || !data?.id) throw error || new Error('CATALOG_SAVE_FAILED');
+    if (version !== epoch || userId !== user.id) return;
     currentId = data.id;
     saveButton.textContent = 'Actualizar producto';
     tell('Producto guardado en tu catálogo privado. Las fotos no se guardan.');
@@ -128,10 +150,11 @@ async function saveItem() {
 }
 async function removeItem(id) {
   if (!confirm('¿Eliminar este producto guardado? Esta acción no se puede deshacer.')) return;
-  await run(async user => {
+  await run(async (user, version) => {
     const { error } = await client.from('pf_catalog_items').delete()
       .eq('id', id).eq('user_id', user.id);
     if (error) throw error;
+    if (version !== epoch || userId !== user.id) return;
     if (currentId === id) { currentId = null; saveButton.textContent = 'Guardar producto'; }
     tell('Producto eliminado del catálogo.');
   });
