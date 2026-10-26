@@ -100,7 +100,7 @@ test('local HTTP -> verified Auth -> brand SQL RPC -> guarded owner read-back',a
       body:JSON.stringify(draft)});
     assert.equal(created.status,201);
     assert.deepEqual(await created.json(),{brand:{id:BRAND,name:draft.name}});
-    assert.equal(calls.filter(c=>c.url.endsWith('/auth/v1/user')).length,1);
+    assert.equal(calls.filter(c=>c.url.endsWith('/auth/v1/user')).length,2); // initial + pre-write
     assert.equal(calls.filter(c=>c.url.includes('/rpc/')).length,1);
     assert.equal(calls.filter(c=>c.url.includes('pf_v2_brands?')).length,1);
   }finally{
