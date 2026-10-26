@@ -48,3 +48,18 @@ test('SQL protege filas por usuario y nunca guarda fotos ni habilita pagos', () 
   assert.match(ui, /\.eq\('user_id', user\.id\)/);
   assert.doesNotMatch(ui, /localStorage\.setItem|photo\.arrayBuffer|upload\(/);
 });
+
+test('el editor incorpora el catálogo y elimina la fotografía al cambiar de producto', () => {
+  const html = readFileSync(new URL('../editor.html', import.meta.url), 'utf8');
+  const editor = readFileSync(new URL('../editor.js', import.meta.url), 'utf8');
+  const ui = readFileSync(new URL('../editor-catalog.mjs', import.meta.url), 'utf8');
+  for (const id of ['pfCatalogStatus', 'pfCatalogControls', 'pfCatalogSave', 'pfCatalogNew', 'pfCatalogList']) {
+    assert.ok(html.includes('id="' + id + '"'));
+  }
+  assert.match(html, /src="editor-catalog\.mjs"/);
+  assert.match(editor, /function clearPhoto\(\)/);
+  assert.match(editor, /state\.image=null/);
+  assert.match(editor, /exportNineLocal,clearPhoto/);
+  assert.match(ui, /\.select\('id'\)\.single\(\)/);
+  assert.match(ui, /title\.textContent = item\.name/);
+});
