@@ -168,3 +168,47 @@ test('revoked session blocks save and hides previously loaded private products',
   assert.equal(nodes.pfCatalogControls.hidden, true);
   assert.equal(app.state().userId, null);
 });
+
+
+test('HTTP 401 while fetching catalog hides private rows even if getUser succeeds', async () => {
+  const { app, nodes } = harness();
+  let revoked = false;
+  app.setClient({
+    auth: { getUser: async () => ({ data: { user: { id: 'user-a' } }, error: null }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => revoked
+        ? { data: null, error: { status: 401, message: 'JWT expired' } }
+        : { data: [{ id: 'item-a', name: 'Private', brand: 'Brand', price: '1' }], error: null }
+    })
+  });
+  await app.verify();
+  assert.equal(nodes.pfCatalogList.rows.length, 1);
+  revoked = true;
+  await app.refresh();
+  assert.equal(nodes.pfCatalogList.rows.length, 0);
+  assert.equal(nodes.pfCatalogControls.hidden, true);
+  assert.equal(app.state().userId, null);
+});
+
+test('HTTP 401 during save clears private rows and selected item', async () => {
+  const { app, nodes } = harness();
+  let writes = 0;
+  app.setClient({
+    auth: { getUser: async () => ({ data: { user: { id: 'user-a' } }, error: null }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => ({ data: [{ id: 'item-a', name: 'Private', brand: 'Brand', price: '1' }], error: null }),
+      update() { writes++; return this; },
+      single: async () => ({ data: null, error: { status: 401, message: 'JWT expired' } })
+    })
+  });
+  await app.verify();
+  app.select('item-a');
+  await app.saveItem();
+  assert.equal(writes, 1);
+  assert.equal(nodes.pfCatalogList.rows.length, 0);
+  assert.equal(nodes.pfCatalogControls.hidden, true);
+  assert.equal(app.state().currentId, null);
+  assert.equal(app.state().userId, null);
+});
