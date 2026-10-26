@@ -142,7 +142,8 @@ test('real local HTTP -> verified Supabase Auth mock -> RPC mock -> owner-checke
     const brands=await fetch(url.replace('/products','/brands'),{headers});
     assert.equal(brands.status,200);
     assert.deepEqual(await brands.json(),{brands:[{id:BRAND,name:'CAFÉ DE CASA'}]});
-    assert.equal(calls.filter(x=>x.url.endsWith('/auth/v1/user')).length,3);
+    // POST verifies once; each private GET revalidates after the store read.
+    assert.equal(calls.filter(x=>x.url.endsWith('/auth/v1/user')).length,5);
     assert.equal(calls.filter(x=>x.url.includes('/rest/v1/rpc/')).length,1);
   }finally{
     await new Promise(resolve=>{server.close(resolve);server.closeAllConnections();});
