@@ -1,0 +1,77 @@
+name: PromoFlash v2 catalog PostgreSQL isolation QA
+on:
+  push:
+    branches:
+      - 'feat/night-20261024-promoflash-brand-contract'
+    paths:
+      - 'v2/sql/pf_v2_catalog_stage_only.sql'
+      - 'tests/sql/catalog-rls-bootstrap.sql'
+      - 'tests/sql/catalog-rls-assertions.sql'
+      - 'v2/sql/pf_v2_product_write_stage_only.sql'
+      - 'tests/sql/catalog-product-write-assertions.sql'
+      - 'tests/sql/catalog-product-concurrency-seed.sql'
+      - 'tests/sql/run-catalog-concurrency.sh'
+      - 'v2/sql/pf_v2_brand_write_stage_only.sql'
+      - 'tests/sql/catalog-brand-write-assertions.sql'
+      - 'tests/sql/catalog-brand-concurrency-seed.sql'
+      - 'tests/sql/run-brand-concurrency.sh'
+      - '.github/workflows/pf-v2-catalog-db-qa.yml'
+  pull_request:
+    paths:
+      - 'v2/sql/pf_v2_catalog_stage_only.sql'
+      - 'tests/sql/catalog-rls-bootstrap.sql'
+      - 'tests/sql/catalog-rls-assertions.sql'
+      - 'v2/sql/pf_v2_product_write_stage_only.sql'
+      - 'tests/sql/catalog-product-write-assertions.sql'
+      - 'tests/sql/catalog-product-concurrency-seed.sql'
+      - 'tests/sql/run-catalog-concurrency.sh'
+      - 'v2/sql/pf_v2_brand_write_stage_only.sql'
+      - 'tests/sql/catalog-brand-write-assertions.sql'
+      - 'tests/sql/catalog-brand-concurrency-seed.sql'
+      - 'tests/sql/run-brand-concurrency.sh'
+      - '.github/workflows/pf-v2-catalog-db-qa.yml'
+jobs:
+  catalog-database-isolation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ephemeral-ci-only
+          POSTGRES_DB: pf_v2_isolated_qa
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pf_v2_isolated_qa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create synthetic auth schema and users (local PostgreSQL only)
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-rls-bootstrap.sql
+      - name: Apply staged migration to disposable database
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < v2/sql/pf_v2_catalog_stage_only.sql
+      - name: Verify owner isolation, FK integrity and deny browser writes
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-rls-assertions.sql
+      - name: Install server-only product creation and verified synthetic plans
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < v2/sql/pf_v2_product_write_stage_only.sql
+      - name: Test service-role product writes, quotas and downgrade
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-product-write-assertions.sql
+      - name: Race two independent service processes against Pro quota
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-product-concurrency-seed.sql
+          bash tests/sql/run-catalog-concurrency.sh "${{ job.services.postgres.id }}"
+      - name: Test transactional Pro/Business brand creation and authorization
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < v2/sql/pf_v2_brand_write_stage_only.sql
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-brand-write-assertions.sql
+      - name: Race two independent Business brand creations against final quota slot
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-brand-concurrency-seed.sql
+          bash tests/sql/run-brand-concurrency.sh "${{ job.services.postgres.id }}"
