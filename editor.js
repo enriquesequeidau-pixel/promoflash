@@ -123,5 +123,31 @@
   $('generate').addEventListener('click',()=>{state.batch=(state.batch+1)%3;renderGallery();document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});track('promo_generate',{category:state.category});});
   $('remix').addEventListener('click',()=>{state.batch=(state.batch+1)%3;renderGallery();track('promo_remix',{category:state.category});});
   $('downloadAll').addEventListener('click',saveAll);
-  restore();setCategory(state.category,false);window.PromoFlashDemo={ render:(canvas,style)=>renderCanvas(canvas,style), selectedStyles};
+  // The Pro UI requires a fresh account check before calling this convenience
+  // export. Actual paid feature authorization and persistence live server-side.
+  let exportingNine=false;
+  async function exportNineLocal(){
+    if(exportingNine)throw new Error('EXPORT_BUSY');
+    exportingNine=true;
+    const previous=state.format;
+    try{
+      const styles=selectedStyles(),files=[];
+      for(const format of ['story','post','square']){
+        state.format=format;
+        for(const [index,style] of styles.entries()){
+          const blob=await toBlob(style);
+          files.push({name:`promo-${index+1}-${style}-${format}.png`,
+            data:new Uint8Array(await blob.arrayBuffer())});
+        }
+      }
+      downloadFile(zip(files),`PromoFlash-${safeName(readInputs().name)}-9-formatos-Pro.zip`);
+      track('pro_nine_export',{count:files.length,category:state.category});
+      return files.length;
+    }finally{
+      state.format=previous;renderGallery();exportingNine=false;
+    }
+  }
+  restore();setCategory(state.category,false);
+  window.PromoFlashDemo={render:(canvas,style)=>renderCanvas(canvas,style),
+    selectedStyles,exportNineLocal};
 })();

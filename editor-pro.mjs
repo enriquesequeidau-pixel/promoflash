@@ -5,6 +5,7 @@
 // Anonymous Free must never download third-party auth dependencies.
 import {tabScopedAuthStorage} from "./auth-storage.mjs";
 import {normalizeProStudioResponse,applyProHeadline} from "./v2/pro-editor-core.mjs";
+import {mexicanSeasonalKit,whatsappSalesText,campaignCalendarIcs} from "./v2/pro-mexico-tools.mjs";
 const cfg=window.PROMOFLASH_CONFIG||{};
 const $=id=>document.getElementById(id);
 const status=$("pfProStatus"),actions=$("pfProActions"),results=$("pfProSuggestions");
@@ -106,3 +107,85 @@ async function startProForExistingSession(){
 void startProForExistingSession();
 generate?.addEventListener("click",()=>void generateCopy());
 $("pfProRefresh")?.addEventListener("click",()=>void verify());
+
+/** Every optional local Pro tool rechecks fresh server-sourced access.
+ * This does not replace backend authorization for paid catalog writes.
+ */
+const proToolStatus=$("pfProToolStatus");
+const signal=(message)=>{if(proToolStatus)proToolStatus.textContent=message;};
+async function authenticatedForTool(){
+ if(!safe()||!activeUserId)return false;
+ const checkpoint=epoch,userId=activeUserId;
+ const {data:{user},error}=await client.auth.getUser();
+ if(error||user?.id!==userId||checkpoint!==epoch)return false;
+ const {data:ent, error:entError}=await client.from("pro_entitlements")
+  .select("active").eq("user_id",userId).maybeSingle();
+ if(checkpoint!==epoch||activeUserId!==userId)return false;
+ if(entError||ent?.active!==true){clear();tell("Tu acceso Pro ya no está vigente.");return false;}
+ return true;
+}
+function editorValue(id){return $(id)?.value?.trim()||"";}
+function updateEditor(patch){
+ for(const [id,value] of Object.entries(patch)){
+  const el=$(id);if(!el)throw new Error("EDITOR_UNAVAILABLE");
+  el.value=value.slice(0,el.maxLength>0?el.maxLength:100);
+  el.dispatchEvent(new Event("input",{bubbles:true}));
+ }
+ const advanced=$("advancedSettings");
+ if(advanced)advanced.open=true;
+}
+async function runProTool(id,work){
+ const btn=$(id);
+ btn?.addEventListener("click",async()=>{
+  if(!btn||btn.disabled)return;
+  btn.disabled=true;signal("Verificando el acceso Pro…");
+  try{
+   if(!(await authenticatedForTool())){signal("Inicia sesión con acceso Pro vigente.");return;}
+   await work();
+  }catch{signal("No se pudo completar la acción. Revisa los datos e intenta nuevamente.");}
+  finally{btn.disabled=false;}
+ });
+}
+void runProTool("pfProApplySeason",async()=>{
+ const kit=mexicanSeasonalKit($("pfProSeason").value);
+ updateEditor({headline:kit.headline,subtitle:kit.subtitle,
+   discount:kit.discount,cta:kit.cta});
+ signal("Pack "+kit.name+" aplicado. Personaliza tu oferta antes de publicar.");
+});
+void runProTool("pfProWhatsApp",async()=>{
+ const copy=whatsappSalesText({shop:editorValue("brand"),
+  product:editorValue("productName"),price:editorValue("price"),
+  cta:editorValue("cta"),headline:editorValue("headline")});
+ try{
+  if(!navigator.clipboard?.writeText)throw new Error("CLIPBOARD_UNAVAILABLE");
+  await navigator.clipboard.writeText(copy);
+  signal("Texto comercial copiado. Pégalo en WhatsApp.");
+ }catch{signal("Copia este texto para WhatsApp: "+copy);}
+});
+void runProTool("pfProNine",async()=>{
+ const exporter=window.PromoFlashDemo?.exportNineLocal;
+ if(typeof exporter!=="function")throw new Error("EDITOR_UNAVAILABLE");
+ const count=await exporter();
+ signal("ZIP con "+count+" imágenes generado en tu dispositivo.");
+});
+const monthPicker=$("pfProCalendarMonth");
+if(monthPicker&&!monthPicker.value){
+ const date=new Date();
+ monthPicker.value=date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");
+}
+void runProTool("pfProCalendar",async()=>{
+ const value=monthPicker?.value||"";
+ if(!/^20[2-9][0-9]-(0[1-9]|1[0-2])$/.test(value))throw new Error("CALENDAR_INVALID");
+ const calendar=campaignCalendarIcs({year:Number(value.slice(0,4)),
+  month:Number(value.slice(5,7)),shop:editorValue("brand"),
+  product:editorValue("productName"),
+  category:document.querySelector(".category.active")?.dataset.category||"home"});
+ const blob=new Blob([calendar],{type:"text/calendar;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ try{
+  const a=document.createElement("a");a.href=url;
+  a.download="PromoFlash-calendario-"+value+".ics";
+  document.body.appendChild(a);a.click();a.remove();
+ }finally{setTimeout(()=>URL.revokeObjectURL(url),10000);}
+ signal("Calendario de cuatro publicaciones descargado. Puedes abrirlo en tu aplicación de calendario.");
+});
