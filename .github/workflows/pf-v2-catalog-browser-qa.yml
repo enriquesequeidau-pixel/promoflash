@@ -1,0 +1,43 @@
+name: PromoFlash v2 isolated catalog browser QA
+on:
+  push:
+    branches:
+      - 'feat/night-20261024-promoflash-brand-contract'
+    paths:
+      - 'tests/catalog-editor-browser.py'
+      - 'editor.html'
+      - 'editor.js'
+      - 'editor.css'
+      - 'analytics-editor.js'
+      - 'v2/catalog-editor-bridge.mjs'
+      - 'v2/catalog-editor-http-client.mjs'
+      - 'v2/product-contract.mjs'
+      - '.github/workflows/pf-v2-catalog-browser-qa.yml'
+  pull_request:
+    paths:
+      - 'tests/catalog-editor-browser.py'
+      - 'editor.html'
+      - 'editor.js'
+      - 'editor.css'
+      - 'analytics-editor.js'
+      - 'v2/catalog-editor-bridge.mjs'
+      - 'v2/catalog-editor-http-client.mjs'
+      - 'v2/product-contract.mjs'
+      - '.github/workflows/pf-v2-catalog-browser-qa.yml'
+permissions:
+  contents: read
+jobs:
+  chromium-free-and-catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated Chromium
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Real Free editor and mocked owner-scoped catalog in Chromium
+        run: python tests/catalog-editor-browser.py
