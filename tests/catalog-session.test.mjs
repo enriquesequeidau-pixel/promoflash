@@ -212,3 +212,45 @@ test('HTTP 401 during save clears private rows and selected item', async () => {
   assert.equal(app.state().currentId, null);
   assert.equal(app.state().userId, null);
 });
+
+
+test('sign-out and sign-in as same user during getUser cannot start stale write', async () => {
+  const { app, nodes } = harness();
+  let account = { id: 'user-a' };
+  let holdNext = false;
+  let release;
+  let mutations = 0;
+  app.setClient({
+    auth: {
+      getUser: async () => {
+        if (holdNext) {
+          holdNext = false;
+          return new Promise(resolve => { release = resolve; });
+        }
+        return { data: { user: account }, error: null };
+      }
+    },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => ({ data: [], error: null }),
+      insert() { mutations++; return this; },
+      single: async () => ({ data: { id: 'stale-item' }, error: null })
+    })
+  });
+  await app.verify();
+  holdNext = true;
+  const saving = app.saveItem();
+  for (let i = 0; i < 20 && !release; i++) await Promise.resolve();
+  assert.equal(typeof release, 'function');
+
+  account = null;
+  await app.verify();
+  account = { id: 'user-a' }; // same ID, but a new authentication epoch
+  await app.verify();
+
+  release({ data: { user: { id: 'user-a' } }, error: null });
+  await saving;
+  assert.equal(mutations, 0, 'no stale insert after sign-out and sign-in');
+  assert.equal(app.state().currentId, null);
+  assert.equal(nodes.pfCatalogSave.textContent, 'Guardar producto');
+});
