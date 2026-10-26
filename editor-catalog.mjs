@@ -119,8 +119,10 @@ async function saveItem() {
     } else {
       query = client.from('pf_catalog_items').insert({ ...draft, user_id: user.id });
     }
-    const { error } = await query;
-    if (error) throw error;
+    const { data, error } = await query.select('id').single();
+    if (error || !data?.id) throw error || new Error('CATALOG_SAVE_FAILED');
+    currentId = data.id;
+    saveButton.textContent = 'Actualizar producto';
     tell('Producto guardado en tu catálogo privado. Las fotos no se guardan.');
   });
 }
