@@ -1,6 +1,12 @@
-PromoFlash v0.7 — 18 octubre 2026
-Supabase activo, base de datos pf_waitlist con RLS e inserción anónima únicamente.
-Correo de contacto configurado: enrique.sequeidau@mayor.cl
-El formulario está habilitado en el paquete LOCAL, pero debe desplegarse en GitHub Pages y probarse allí.
-PENDIENTES para publicidad/ventas: identidad legal y domicilio del responsable, pruebas anti-spam/rate-limit, configuración de píxeles / analítica, configuración de Stripe u otro cobro y entrega real del plan Pro, despliegue y pruebas end-to-end.
-No existe campaña publicitaria ni checkout activos.
+PromoFlash — estado de activación
+Actualizado: 26 octubre 2026
+
+Sitio y editor gratis publicados.
+Mercado comercial aprobado: México.
+Planes Pro/Business aprobados para implementación: MXN 99 / MXN 199 al mes.
+Autenticación: identidad central Supabase con retorno a PromoFlash.
+Checkout: deshabilitado. La función promoflash-checkout devuelve 503 mx_checkout_provider_pending.
+Proveedor de suscripción MXN: pendiente de aprobación y de integración.
+Funciones Pro: implementación parcial; módulos comerciales pendientes.
+No hay campañas pagadas ni cobros Pro activos.
+El plan anterior de CLP 4.990 y su enlace no aplican a la oferta mexicana.
