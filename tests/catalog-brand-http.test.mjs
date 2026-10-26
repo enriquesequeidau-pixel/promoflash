@@ -137,3 +137,32 @@ test('real HTTP: POST remains disabled when trusted createBrand dependency is ab
     assert.deepEqual(calls.auth,[]);
   },{createBrand:undefined});
 });
+
+
+test('real HTTP: revocation while listing brands never exposes private brand name',async()=>{
+  let release,entered,active=true;
+  const started=new Promise(resolve=>{entered=resolve;});
+  const verifications=[];
+  await withServer(async({url,auth})=>{
+    const request=fetch(url,{headers:auth});
+    await started;
+    active=false;
+    release();
+    const response=await request;
+    assert.equal(response.status,401);
+    const body=await response.text();
+    assert.equal(body,'{"error":"UNAUTHENTICATED"}');
+    assert.doesNotMatch(body,/Tienda ficticia|ownerUid/);
+    assert.deepEqual(verifications,['owner-one-token','owner-one-token']);
+  },{
+    authenticateBearer:async token=>{
+      verifications.push(token);
+      return active&&token==='owner-one-token'?{uid:A}:null;
+    },
+    listBrands:async uid=>{
+      assert.equal(uid,A);
+      await new Promise(resolve=>{release=resolve;entered();});
+      return [{id:BRAND_ID,ownerUid:A,name:draft.name}];
+    }
+  });
+});
