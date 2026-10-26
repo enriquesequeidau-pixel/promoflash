@@ -6,6 +6,7 @@ on:
     paths:
       - 'tests/catalog-editor-browser.py'
       - 'editor.html'
+      - 'editor-pro.mjs'
       - 'editor.js'
       - 'editor.css'
       - 'analytics-editor.js'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'tests/catalog-editor-browser.py'
       - 'editor.html'
+      - 'editor-pro.mjs'
       - 'editor.js'
       - 'editor.css'
       - 'analytics-editor.js'
