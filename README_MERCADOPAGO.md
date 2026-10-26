@@ -1,15 +1,17 @@
-# Mercado Pago — PromoFlash Pro
+# PromoFlash Pro — estado de cobros
 
-Plan confirmado por el usuario: **$4.990 CLP al mes**. No comprobado independientemente en checkout.
+**Mercado aprobado:** México. **Planes propuestos:** Pro $99 MXN/mes y Business $199 MXN/mes.
 
-Enlace público configurado: https://mpago.la/2iWVYnc
+**Estado actual (26 de octubre de 2026):** los cobros siguen deshabilitados. La interfaz tiene `proPaymentsEnabled: false` y la función desplegada `promoflash-checkout` responde `503 mx_checkout_provider_pending`. El checkout mexicano todavía no está implementado.
 
-**Estado: cobros DESHABILITADOS en la web** (`config.js`: `proPaymentsEnabled: false`). No compartir el enlace con clientes hasta que las funcionalidades de Pro, la autenticación, la conciliación de suscripciones, cancelaciones y la entrega automática de acceso estén verificadas.
+El enlace y plan heredados de **$4.990 CLP** corresponden a una configuración anterior de Chile. No representan los planes mexicanos y no deben compartirse ni usarse para activar Pro.
 
-La página en GitHub Pages no puede consultar Mercado Pago de forma segura por sí sola. Es necesario un backend (p. ej. Supabase Edge Functions) con tokens privados guardados únicamente como secretos de servidor, que verifique por API el estado de suscripciones/cobros y vincule pagos a cuentas verificadas. No habilitar acceso basándose solo en la URL de regreso o en un correo enviado desde navegador.
+## Qué falta antes de vender Pro
 
-Mercado Pago exige consultar y verificar pagos/suscripciones por API y notificaciones; revisar compatibilidad de tarjetas emitidas en México para las suscripciones de Chile antes de gastar en anuncios.
+1. Confirmar un proveedor aprobado para cobrar suscripciones en MXN a clientes de México.
+2. Implementar el checkout mexicano y el acceso vinculado a una cuenta verificada.
+3. Verificar pagos aprobados desde el servidor, firma e idempotencia de webhooks, cancelaciones, vencimientos, reembolsos y fallas.
+4. Completar y probar los seis módulos Pro del alcance comercial aprobado: campañas completas, catálogo, kits de temporada, calendario, identidad de marca y promociones para WhatsApp.
+5. Actualizar términos y privacidad para describir los planes y la retención de datos.
 
-Pendientes: implementar función Pro real, autenticación, reconciliación segura, página de cuenta/cancelación, pruebas de pago y renovación, validación fiscal/privacidad y protección contra spam.
-
-La configuración de cobros no se ha ejecutado; el usuario creó un plan de suscripción por su cuenta.
+El editor gratuito sigue disponible. Las claves privadas deben guardarse solo como secretos del servidor; nunca en los archivos web. Un enlace de pago externo por sí solo no debe conceder acceso Pro.
