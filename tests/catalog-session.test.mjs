@@ -27,7 +27,7 @@ function harness() {
   const factory = new Function('document', 'window', 'tabScopedAuthStorage',
     'readCatalogDraft', 'applyCatalogDraft', 'normalizeCatalogDraft', 'confirm',
     source + '\nreturn { verify, refresh, select: id => { currentId = id; }, ' +
-      'state: () => ({ currentId, userId }), setClient: value => { client = value; } };');
+      'state: () => ({ currentId, userId }), saveItem, setClient: value => { client = value; } };');
   const app = factory(doc, { PROMOFLASH_CONFIG: {} },
     () => {}, () => {}, () => {}, value => value, () => true);
   return { app, nodes };
@@ -80,4 +80,42 @@ test('older network response cannot replace newer catalog contents', async () =>
   await older;
   assert.match(nodes.pfCatalogList.rows[0].children[0].textContent, /Newer/);
   assert.doesNotMatch(nodes.pfCatalogList.rows[0].children[0].textContent, /Older/);
+});
+
+
+async function saveDuringAuthRefresh(switchAccount) {
+  const { app, nodes } = harness();
+  let account = 'user-a';
+  let settle;
+  app.setClient({
+    auth: { getUser: async () => ({ data: { user: { id: account } }, error: null }) },
+    from: () => ({
+      select() { return this; }, eq() { return this; }, order() { return this; },
+      limit: async () => ({ data: [], error: null }),
+      insert() { return this; },
+      single() { return new Promise(resolve => { settle = resolve; }); }
+    })
+  });
+  await app.verify();
+  const saving = app.saveItem();
+  for (let i = 0; i < 20 && !settle; i++) await Promise.resolve();
+  assert.equal(typeof settle, 'function', 'save must be pending');
+  if (switchAccount) account = 'user-b';
+  await app.verify();
+  settle({ data: { id: 'saved-item' }, error: null });
+  await saving;
+  return { app, nodes };
+}
+
+test('save response survives same-user auth token refresh without duplicate insert', async () => {
+  const { app, nodes } = await saveDuringAuthRefresh(false);
+  assert.equal(app.state().currentId, 'saved-item');
+  assert.equal(nodes.pfCatalogSave.textContent, 'Actualizar producto');
+});
+
+test('save response cannot select an old account product after account switch', async () => {
+  const { app, nodes } = await saveDuringAuthRefresh(true);
+  assert.equal(app.state().userId, 'user-b');
+  assert.equal(app.state().currentId, null);
+  assert.equal(nodes.pfCatalogSave.textContent, 'Guardar producto');
 });
