@@ -186,3 +186,31 @@ test('POST brand endpoint and anonymous GET fail before accessing store',async()
     assert.deepEqual(calls.auth,[]);
   });
 });
+
+
+test('revoked session during real HTTP brand lookup cannot overwrite Free editor',async()=>{
+  let release,entered,valid=true;
+  const started=new Promise(resolve=>{entered=resolve;});
+  await withServer(async({client,calls})=>{
+    const ui=fakeEditor(client);
+    ui.click();
+    await started;
+    valid=false;
+    release(BRANDS_A);
+    await settle(ui);
+    assert.deepEqual(Object.values(ui.controls).map(x=>x.value),
+      ['FREE-UNCHANGED','FREE-UNCHANGED','FREE-UNCHANGED']);
+    assert.equal(ui.categoryClicks,0);
+    assert.equal(ui.inputEvents,0);
+    assert.deepEqual(ui.errors,['UNAUTHENTICATED']);
+    assert.deepEqual(calls.products,[A]);
+    assert.deepEqual(calls.brands,[A]);
+  },{
+    authenticateBearer:async token=>valid&&token==='owner-one-token'?{uid:A}:null,
+    listBrands:uid=>new Promise(resolve=>{
+      assert.equal(uid,A);
+      release=resolve;
+      entered();
+    })
+  });
+});
