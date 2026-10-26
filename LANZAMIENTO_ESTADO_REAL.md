@@ -1,11 +1,27 @@
-# PromoFlash: estado verificado de la integración (v1.1)
+# PromoFlash — estado verificado de lanzamiento
 
-- Base de datos de usuarios, links de suscripción, entitlements y marca Pro creadas con RLS.
-- Función promoflash-pro-studio desplegada; solo genera titulares y guarda marca tras validar acceso Pro activo.
-- Función promoflash-checkout desplegada, pero intencionalmente bloqueada a menos que se configure PF_CHECKOUT_ENABLED=true en Supabase. NO ACTIVAR antes de prueba completa.
-- Webhook valida firma e intenta conciliar eventos subscription_preapproval. No se ha probado un pago completo. Eventos de otros tipos aún no cambian el estado y requieren conciliación periódica.
-- El registro y el acceso gratuito funcionan. El plan de Mercado Pago es CLP 4990 mensual, pero NO se ha hecho una compra exitosa ni comprobado una cancelación.
-- El checkout requiere validación de alta, autorización, devolución, reintentos y persistencia frente a fallas del proveedor antes de habilitar cargos.
-- v1.1 NO está publicada; GitHub requiere un commit del usuario o permisos de escritura adicionales.
-- No ejecutar anuncios de suscripciones aún. Se puede validar demanda del editor gratuito antes de habilitar el cobro.
-- La función Pro genera 3 titulares y guarda marca: no es IA generativa, ni habilita todas las funciones del editor como exclusivas.
+**Actualizado:** 26 de octubre de 2026.
+
+## Disponible
+
+- El sitio y el editor gratuito están publicados.
+- Registro y acceso usan la identidad central de Supabase; la cuenta redirige a PromoFlash.
+- Hay tablas y funciones protegidas para cuenta, entitlements y herramientas Pro parciales.
+- El alcance comercial aprobado apunta a México: Pro $99 MXN/mes y Business $199 MXN/mes.
+
+## Aún no disponible para venta pagada
+
+- `proPaymentsEnabled=false`; la función `promoflash-checkout` devuelve `503 mx_checkout_provider_pending`.
+- No hay checkout mexicano operativo ni una transacción de suscripción verificada.
+- La función Pro existente solo genera titulares y guarda una marca; no implementa el alcance Pro completo.
+- Faltan catálogo, campañas completas, kits, calendario, separación de varias marcas, promociones para WhatsApp y límites de plan.
+- El plan y enlace heredados de $4.990 CLP son de una configuración anterior para Chile; no corresponden al producto aprobado para México.
+
+## Para cerrar el lanzamiento Pro
+
+- Elegir y aprobar el proveedor que cobrará suscripciones en MXN.
+- Implementar y verificar checkout, webhooks, cancelación, reembolso, expiración y entrega/revocación de acceso.
+- Completar y probar las funciones Pro aprobadas y actualizar términos y privacidad.
+- Mantener los cobros y la publicidad pagada apagados hasta completar esas validaciones.
+
+El editor gratuito puede seguir captando usuarios mientras se completa el producto de pago.
