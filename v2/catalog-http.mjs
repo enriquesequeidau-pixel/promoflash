@@ -122,6 +122,14 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
       if(!principal||typeof principal.uid!=='string'||!UUID.test(principal.uid)){
         send(res,401,{error:'UNAUTHENTICATED'});return;
       }
+      // A token can be revoked or reassigned while an owner-scoped read awaits
+      // the store. Recheck immediately before returning private GET data.
+      async function stillAuthorized(){
+        try{
+          const fresh=await authenticateBearer(match[1]);
+          return fresh?.uid===principal.uid;
+        }catch{return false;}
+      }
       if(isBrands){
         if(req.method==='POST'){
           if(!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(
@@ -144,6 +152,9 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
         const brands=records.map(row=>safeBrand(row,principal.uid));
         if(new Set(brands.map(b=>b.id)).size!==brands.length)
           throw fail(503,'CATALOG_UNAVAILABLE');
+        if(!(await stillAuthorized())){
+          send(res,401,{error:'UNAUTHENTICATED'});return;
+        }
         send(res,200,{brands});return;
       }
       if(req.method==='GET'){
@@ -153,6 +164,9 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
         const products=records.map(row=>safeProduct(row,principal.uid));
         if(new Set(products.map(p=>p.id)).size!==products.length)
           throw fail(503,'CATALOG_UNAVAILABLE');
+        if(!(await stillAuthorized())){
+          send(res,401,{error:'UNAUTHENTICATED'});return;
+        }
         send(res,200,{products});
         return;
       }
