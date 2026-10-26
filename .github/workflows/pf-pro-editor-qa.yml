@@ -1,0 +1,35 @@
+name: PromoFlash Pro editor integración sin pagos
+on:
+  pull_request:
+    paths:
+      - 'editor.html'
+      - 'editor-pro.mjs'
+      - 'v2/pro-editor-core.mjs'
+      - 'tests/pro-editor-*.test.mjs'
+      - '.github/workflows/pf-pro-editor-qa.yml'
+  push:
+    branches:
+      - feat/pro-editor-integracion-sin-pagos-20261026
+    paths:
+      - 'editor.html'
+      - 'editor-pro.mjs'
+      - 'v2/pro-editor-core.mjs'
+      - 'tests/pro-editor-*.test.mjs'
+      - '.github/workflows/pf-pro-editor-qa.yml'
+permissions:
+  contents: read
+jobs:
+  pro-editor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check editor-pro.mjs
+          node --check v2/pro-editor-core.mjs
+      - name: Tests
+        run: node --test tests/pro-editor-core.test.mjs tests/pro-editor-contract.test.mjs
