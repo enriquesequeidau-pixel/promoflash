@@ -189,7 +189,7 @@ test('POST brand endpoint and anonymous GET fail before accessing store',async()
 
 
 test('revoked session during real HTTP brand lookup cannot overwrite Free editor',async()=>{
-  let release,entered,valid=true;
+  let release,entered,valid=true,brandReads=0;
   const started=new Promise(resolve=>{entered=resolve;});
   await withServer(async({client,calls})=>{
     const ui=fakeEditor(client);
@@ -204,10 +204,11 @@ test('revoked session during real HTTP brand lookup cannot overwrite Free editor
     assert.equal(ui.inputEvents,0);
     assert.deepEqual(ui.errors,['UNAUTHENTICATED']);
     assert.deepEqual(calls.products,[A]);
-    assert.deepEqual(calls.brands,[A]);
+    assert.equal(brandReads,1);
   },{
     authenticateBearer:async token=>valid&&token==='owner-one-token'?{uid:A}:null,
     listBrands:uid=>new Promise(resolve=>{
+      brandReads++;
       assert.equal(uid,A);
       release=resolve;
       entered();
