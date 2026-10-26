@@ -75,8 +75,15 @@ async function refresh() {
     if (version !== epoch || request !== refreshSerial || user.id !== userId) return;
     if (error) throw error;
     render((data || []).map(item => ({ ...normalizeCatalogDraft(item), id: item.id })));
-  } catch {
-    if (version === epoch && request === refreshSerial) tell('No se pudo cargar el catálogo. Revisa tu sesión o la configuración.');
+  } catch (error) {
+    if (version !== epoch || request !== refreshSerial) return;
+    if (error?.message === 'AUTH_REQUIRED') {
+      // A revoked session must not leave another account's private rows visible.
+      clear();
+      tell('Tu sesión terminó. Inicia sesión nuevamente para ver tu catálogo.');
+    } else {
+      tell('No se pudo cargar el catálogo. Revisa tu conexión o la configuración.');
+    }
   }
 }
 async function verify() {
@@ -124,8 +131,16 @@ async function run(operation) {
     // Refresh that user's catalog even if the earlier request epoch changed.
     if (version !== accountEpoch || userId !== user.id) return;
     await refresh();
-  } catch {
-    if (version === accountEpoch) tell('No se pudo guardar el cambio. Verifica tu conexión y vuelve a intentar.');
+  } catch (error) {
+    if (version === accountEpoch) {
+      if (error?.message === 'AUTH_REQUIRED') {
+        // Fail closed if a write is attempted after server-side revocation.
+        clear();
+        tell('Tu sesión terminó. Inicia sesión nuevamente para guardar cambios.');
+      } else {
+        tell('No se pudo guardar el cambio. Verifica tu conexión y vuelve a intentar.');
+      }
+    }
   } finally {
     busy = false;
     saveButton.disabled = false;
