@@ -22,3 +22,9 @@ test("no concede Pro en el navegador ni mezcla almacenamiento entre apps",()=>{
  assert.ok(script.includes("current.data.user?.id!==userId"));
  assert.ok(script.includes("credentials:\"omit\""));
 });
+
+test("Anonymous Free never boots the Supabase SDK or fetches its CDN",()=>{
+ assert.doesNotMatch(script,/^\s*import\s+.*cdn\.jsdelivr\.net/m);
+ assert.match(script,/if\(!hasExistingAccountSession\(\)\)/);
+ assert.match(script,/await import\("https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2\.57\.0\/\+esm"\)/);
+});
