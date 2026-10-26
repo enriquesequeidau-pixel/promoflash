@@ -14,9 +14,10 @@ const controls = $('pfCatalogControls');
 const list = $('pfCatalogList');
 const saveButton = $('pfCatalogSave');
 const newButton = $('pfCatalogNew');
-let client = null, userId = null, currentId = null, epoch = 0, refreshSerial = 0, busy = false;
+let client = null, userId = null, currentId = null, epoch = 0, refreshSerial = 0, accountEpoch = 0, busy = false;
 function tell(message) { status.textContent = message; }
 function clear() {
+  ++accountEpoch;
   ++epoch;
   ++refreshSerial;
   userId = null;
@@ -95,6 +96,7 @@ async function verify() {
       return;
     }
     if (user.id !== userId) {
+      ++accountEpoch;
       currentId = null;
       saveButton.textContent = 'Guardar producto';
     }
@@ -114,16 +116,16 @@ async function run(operation) {
   busy = true;
   saveButton.disabled = true;
   newButton.disabled = true;
-  const version = epoch;
+  const version = accountEpoch;
   try {
     const user = await authenticated();
     await operation(user, version);
     // A token refresh may have reverified the same user during the write.
     // Refresh that user's catalog even if the earlier request epoch changed.
-    if (userId !== user.id) return;
+    if (version !== accountEpoch || userId !== user.id) return;
     await refresh();
   } catch {
-    if (version === epoch) tell('No se pudo guardar el cambio. Verifica tu conexión y vuelve a intentar.');
+    if (version === accountEpoch) tell('No se pudo guardar el cambio. Verifica tu conexión y vuelve a intentar.');
   } finally {
     busy = false;
     saveButton.disabled = false;
@@ -142,7 +144,7 @@ async function saveItem() {
     }
     const { data, error } = await query.select('id').single();
     if (error || !data?.id) throw error || new Error('CATALOG_SAVE_FAILED');
-    if (version !== epoch || userId !== user.id) return;
+    if (version !== accountEpoch || userId !== user.id) return;
     currentId = data.id;
     saveButton.textContent = 'Actualizar producto';
     tell('Producto guardado en tu catálogo privado. Las fotos no se guardan.');
@@ -154,7 +156,7 @@ async function removeItem(id) {
     const { error } = await client.from('pf_catalog_items').delete()
       .eq('id', id).eq('user_id', user.id);
     if (error) throw error;
-    if (version !== epoch || userId !== user.id) return;
+    if (version !== accountEpoch || userId !== user.id) return;
     if (currentId === id) { currentId = null; saveButton.textContent = 'Guardar producto'; }
     tell('Producto eliminado del catálogo.');
   });
