@@ -1,7 +1,8 @@
 /** Integración Pro en el editor Free: usa la misma sesión de la página de cuenta.
  * Sin pago, sin conceder entitlements, sin subir fotos ni almacenar JWT en disco.
  */
-import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm";
+// Import Supabase only for a user who already signed in to PromoFlash.
+// Anonymous Free must never download third-party auth dependencies.
 import {tabScopedAuthStorage} from "./auth-storage.mjs";
 import {normalizeProStudioResponse,applyProHeadline} from "./v2/pro-editor-core.mjs";
 const cfg=window.PROMOFLASH_CONFIG||{};
@@ -79,8 +80,20 @@ async function generateCopy(){
   busy=false;generate.disabled=false;
  }
 }
-if(source&&publishable){
+const AUTH_KEY="sequeidaulabs-promoflash-auth-v1";
+function hasExistingAccountSession(){
  try{
+  return Boolean(window.sessionStorage.getItem(AUTH_KEY)||window.localStorage.getItem(AUTH_KEY));
+ }catch{return false;}
+}
+async function startProForExistingSession(){
+ if(!source||!publishable){tell("El editor gratis está disponible. Pro se está configurando.");return;}
+ if(!hasExistingAccountSession()){
+  tell("Editor gratis disponible. Entra en Mi cuenta para usar Pro.");return;
+ }
+ try{
+  // No CDN fetches, billing requests, or account writes during anonymous Free usage.
+  const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/+esm");
   client=createClient(source,publishable,{auth:{
    persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,
    storage:tabScopedAuthStorage("sequeidaulabs-promoflash-auth-v1"),
@@ -89,6 +102,7 @@ if(source&&publishable){
   client.auth.onAuthStateChange(()=>{epoch++;clear();queueMicrotask(()=>void verify());});
   void verify();
  }catch{tell("No se pudo iniciar la sesión Pro. El editor gratis sigue disponible.");}
-}else tell("El editor gratis está disponible. Pro se está configurando.");
+}
+void startProForExistingSession();
 generate?.addEventListener("click",()=>void generateCopy());
 $("pfProRefresh")?.addEventListener("click",()=>void verify());
