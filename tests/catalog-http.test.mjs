@@ -203,3 +203,51 @@ test('real HTTP: product missing explicit owner is rejected before returning dat
     assert.equal(response.status,503);
   },{listProducts:async()=>[{...requestBody,id:'p3',currency:'MXN'}]});
 });
+
+
+test('real HTTP: revocation during pending product read denies private payload',async()=>{
+  let release,entered,active=true;
+  const started=new Promise(resolve=>{entered=resolve;});
+  const verifications=[];
+  await withApi(async({url,auth})=>{
+    const request=fetch(url,{headers:auth()});
+    await started;
+    active=false;
+    release();
+    const response=await request;
+    assert.equal(response.status,401);
+    assert.deepEqual(await response.json(),{error:'UNAUTHENTICATED'});
+    assert.deepEqual(verifications,['owner-one-token','owner-one-token']);
+  },{
+    authenticateBearer:async token=>{
+      verifications.push(token);
+      return active&&token==='owner-one-token'?{uid:A}:null;
+    },
+    listProducts:async uid=>{
+      assert.equal(uid,A);
+      await new Promise(resolve=>{release=resolve;entered();});
+      return [ownedA];
+    }
+  });
+});
+
+test('real HTTP: identity reassignment during product read fails closed',async()=>{
+  let release,entered,currentUid=A;
+  const started=new Promise(resolve=>{entered=resolve;});
+  await withApi(async({url,auth})=>{
+    const request=fetch(url,{headers:auth()});
+    await started;
+    currentUid=B;
+    release();
+    const response=await request;
+    assert.equal(response.status,401);
+    assert.deepEqual(await response.json(),{error:'UNAUTHENTICATED'});
+  },{
+    authenticateBearer:async token=>token==='owner-one-token'?{uid:currentUid}:null,
+    listProducts:async uid=>{
+      assert.equal(uid,A);
+      await new Promise(resolve=>{release=resolve;entered();});
+      return [ownedA];
+    }
+  });
+});
