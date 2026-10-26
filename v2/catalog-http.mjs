@@ -123,7 +123,9 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
         send(res,401,{error:'UNAUTHENTICATED'});return;
       }
       // A token can be revoked or reassigned while an owner-scoped read awaits
-      // the store. Recheck immediately before returning private GET data.
+      // the store, or while a POST body is still arriving. Recheck before
+      // returning private GET data AND immediately before dispatching a write.
+      // The trusted DB RPC must still enforce plan/owner/quota transactionally.
       async function stillAuthorized(){
         try{
           const fresh=await authenticateBearer(match[1]);
@@ -140,6 +142,9 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
           let draft;
           try{draft=normalizeBrandDraft(body);}catch{
             send(res,422,{error:'INVALID_BRAND'});return;
+          }
+          if(!(await stillAuthorized())){
+            send(res,401,{error:'UNAUTHENTICATED'});return;
           }
           const created=await createBrand(principal.uid,draft);
           send(res,201,{brand:safeBrand(created,principal.uid)});
@@ -178,7 +183,10 @@ export function createCatalogHttpHandler({authenticateBearer,listProducts,listBr
       try{draft=normalizeProductDraft(body);}catch{
         send(res,422,{error:'INVALID_PRODUCT'});return;
       }
-      // Only owner uid extracted from verified token goes to the trusted RPC.
+      // Only the owner from a still-valid verified token reaches the trusted RPC.
+      if(!(await stillAuthorized())){
+        send(res,401,{error:'UNAUTHENTICATED'});return;
+      }
       const created=await createProduct(principal.uid,draft);
       send(res,201,{product:safeProduct(created,principal.uid)});
     }catch(error){
