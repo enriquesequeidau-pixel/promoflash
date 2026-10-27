@@ -212,7 +212,13 @@ async function start() {
       persistSession: true, autoRefreshToken: true, detectSessionInUrl: false,
       storage: tabScopedAuthStorage(AUTH_KEY), storageKey: AUTH_KEY
     }});
-    client.auth.onAuthStateChange(() => { queueMicrotask(() => void verify()); });
+    client.auth.onAuthStateChange((event, session) => {
+      // Hide a private draft immediately on sign-out or a new account's session.
+      // A same-account token refresh must not discard unsaved Free edits.
+      if (event === 'SIGNED_OUT' ||
+          (userId && session?.user?.id && session.user.id !== userId)) clear();
+      queueMicrotask(() => void verify());
+    });
     await verify();
   } catch { tell('El catálogo no está disponible ahora. Puedes seguir diseñando gratis.'); }
 }
