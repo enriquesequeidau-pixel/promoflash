@@ -19,7 +19,11 @@ Supabase, no agenda publicaciones, no activa Pro/Business ni pagos.
 migrations/20261027_pf_campaign_drafts_stage_only.sql contiene una propuesta
 transaccional para dos tablas: pf_campaign_drafts y pf_campaign_products.
 Depende de que exista public.pf_catalog_items del PR #26; si falta, falla
-antes de crear tablas. Crea un índice único compuesto (user_id, id) en el
+antes de crear tablas. Además comprueba en pg_catalog que el catálogo sea
+una tabla con RLS habilitado y forzado; si falta alguna protección, aborta
+antes de modificar el esquema. Esta comprobación **no valida las políticas
+RLS**: sigue siendo obligatorio probar el aislamiento real entre cuentas.
+Crea un índice único compuesto (user_id, id) en el
 catálogo y claves foráneas compuestas que impiden asociar un producto ajeno
 a una campaña. La posición única entre 1 y 50 limita el número de referencias
 y la restricción de estado impide publicar o programar desde la base.
