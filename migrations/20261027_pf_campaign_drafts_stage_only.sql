@@ -9,6 +9,20 @@ BEGIN
   IF to_regclass('public.pf_catalog_items') IS NULL THEN
     RAISE EXCEPTION 'pf_catalog_items must exist before campaign drafts';
   END IF;
+  -- The catalog may have been created manually with weaker security.
+  -- Reject it before any DDL; this is necessary but not a substitute for
+  -- reviewing its policies and testing cross-account access in staging.
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = 'pf_catalog_items'
+      AND c.relkind IN ('r', 'p')
+      AND c.relrowsecurity AND c.relforcerowsecurity
+  ) THEN
+    RAISE EXCEPTION 'Catalog must be a table with RLS enabled and forced';
+  END IF;
 END;
 $$;
 
