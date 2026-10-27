@@ -23,32 +23,41 @@ function utc(value) {
 }
 
 export function normalizeCampaignDraft(input) {
+  // Only JSON-like own data properties are accepted. Inherited fields and
+  // getters must not silently supply a draft or execute code during validation.
   if (!input || typeof input !== 'object' || Array.isArray(input) ||
-      Object.keys(input).some(key => !KEYS.includes(key))) {
+      (Object.getPrototypeOf(input) !== Object.prototype && Object.getPrototypeOf(input) !== null)) {
     throw new TypeError('CAMPAIGN_INVALID_FIELDS');
   }
-  if (typeof input.title !== 'string' || CONTROL.test(input.title) ||
-      !input.title.trim() || input.title.length > 80) {
+  const descriptors = Object.getOwnPropertyDescriptors(input);
+  const ownKeys = Reflect.ownKeys(input);
+  if (ownKeys.length !== KEYS.length || ownKeys.some(key =>
+      !KEYS.includes(key) || !descriptors[key].enumerable || !('value' in descriptors[key]))) {
+    throw new TypeError('CAMPAIGN_INVALID_FIELDS');
+  }
+  const fields = Object.fromEntries(KEYS.map(key => [key, descriptors[key].value]));
+  if (typeof fields.title !== 'string' || CONTROL.test(fields.title) ||
+      !fields.title.trim() || fields.title.length > 80) {
     throw new TypeError('CAMPAIGN_INVALID_TITLE');
   }
-  if (!CAMPAIGN_CHANNELS.includes(input.channel) || input.status !== 'draft') {
+  if (!CAMPAIGN_CHANNELS.includes(fields.channel) || fields.status !== 'draft') {
     throw new TypeError('CAMPAIGN_DRAFT_ONLY');
   }
-  if (!Array.isArray(input.productIds) || input.productIds.length < 1 ||
-      input.productIds.length > CAMPAIGN_MAX_PRODUCTS ||
-      input.productIds.some(id => typeof id !== 'string' || !UUID.test(id)) ||
-      new Set(input.productIds).size !== input.productIds.length) {
+  if (!Array.isArray(fields.productIds) || fields.productIds.length < 1 ||
+      fields.productIds.length > CAMPAIGN_MAX_PRODUCTS ||
+      fields.productIds.some(id => typeof id !== 'string' || !UUID.test(id)) ||
+      new Set(fields.productIds).size !== fields.productIds.length) {
     throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
   }
-  const startsAt = utc(input.startsAt);
-  const endsAt = utc(input.endsAt);
+  const startsAt = utc(fields.startsAt);
+  const endsAt = utc(fields.endsAt);
   if ((startsAt === null) !== (endsAt === null) ||
       (startsAt !== null && startsAt >= endsAt)) {
     throw new TypeError('CAMPAIGN_INVALID_WINDOW');
   }
   return Object.freeze({
-    title: input.title.trim(), channel: input.channel,
-    productIds: Object.freeze([...input.productIds]),
+    title: fields.title.trim(), channel: fields.channel,
+    productIds: Object.freeze([...fields.productIds]),
     startsAt, endsAt, status: 'draft'
   });
 }
