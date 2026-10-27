@@ -2,7 +2,7 @@
  * No anonymous SDK download, paid entitlement changes, or photo uploads.
  */
 import { tabScopedAuthStorage } from './auth-storage.mjs';
-import { readCatalogDraft, applyCatalogDraft, normalizeCatalogDraft } from './v2/catalog-core.mjs';
+import { readCatalogDraft, applyCatalogDraft, normalizeCatalogDraft, clearCatalogDraft } from './v2/catalog-core.mjs';
 const $ = id => document.getElementById(id);
 const cfg = window.PROMOFLASH_CONFIG || {};
 const source = cfg.accountSupabaseUrl || cfg.supabaseUrl;
@@ -14,9 +14,18 @@ const controls = $('pfCatalogControls');
 const list = $('pfCatalogList');
 const saveButton = $('pfCatalogSave');
 const newButton = $('pfCatalogNew');
-let client = null, userId = null, currentId = null, epoch = 0, refreshSerial = 0, accountEpoch = 0, busy = false;
+let client = null, userId = null, currentId = null, epoch = 0, refreshSerial = 0, accountEpoch = 0, busy = false, catalogOwnedEditor = false;
 function tell(message) { status.textContent = message; }
+function clearCloudOwnedDraft() {
+  // Private product text must not survive sign-out or account switching.
+  // Preserve unrelated unsaved Free work when no cloud draft was opened/saved.
+  if (!catalogOwnedEditor) return;
+  try { clearCatalogDraft(document, window.PromoFlashDemo?.clearPhoto); }
+  catch { window.location.reload(); } // Fail closed if the editor cannot be reset.
+  catalogOwnedEditor = false;
+}
 function clear() {
+  clearCloudOwnedDraft();
   ++accountEpoch;
   ++epoch;
   ++refreshSerial;
@@ -55,6 +64,7 @@ function render(items) {
       if (!userId || busy) return;
       try {
         applyCatalogDraft(document, item, window.PromoFlashDemo?.clearPhoto);
+        catalogOwnedEditor = true;
         currentId = item.id;
         saveButton.textContent = 'Actualizar producto';
         tell('Producto cargado. Agrega su foto nuevamente si corresponde.');
@@ -108,6 +118,7 @@ async function verify() {
       return;
     }
     if (user.id !== userId) {
+      clearCloudOwnedDraft();
       ++accountEpoch;
       currentId = null;
       saveButton.textContent = 'Guardar producto';
@@ -169,6 +180,7 @@ async function saveItem() {
     if (error || !data?.id) throw error || new Error('CATALOG_SAVE_FAILED');
     if (version !== accountEpoch || userId !== user.id) return;
     currentId = data.id;
+    catalogOwnedEditor = true;
     saveButton.textContent = 'Actualizar producto';
     tell('Producto guardado en tu catálogo privado. Las fotos no se guardan.');
   });
