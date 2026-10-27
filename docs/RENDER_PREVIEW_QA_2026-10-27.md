@@ -21,6 +21,17 @@ La UI de cuenta no puede considerarse QA aprobadа mientras falten imports.
 No efectuar más pruebas de recuperación/login en esa preview hasta publicar
 los recursos necesarios. El checkout Pro permanece desactivado.
 
+## Dominio comercial existente: situación diferente del preview
+
+Una comprobación independiente de `https://promoflash.sequeidaulabs.com`
+el 27-10-2026 devolvió contenido correctamente para
+`/cuenta.html`, `/auth-captcha.mjs`, `/auth-storage.mjs` y
+`/brand.css`. Por tanto los **404 observados se limitan al servicio
+Render preview**, no son evidencia de que falten los módulos en el dominio
+comercial actual. Estas lecturas HTTP no equivalen a un login real ni a un
+QA completo de cuenta, Turnstile o recuperación. La ruta gratuita ya está
+publicada, pero los cobros Pro siguen apagados.
+
 ## Cambio preparado en código — **NO aplicado al servicio Render actual**
 
 `render.yaml` tiene ahora la lista completa de activos públicos e incluye
