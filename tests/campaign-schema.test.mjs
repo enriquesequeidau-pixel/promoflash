@@ -13,6 +13,17 @@ test('la migración es transaccional y depende del catálogo', () => {
   assert.match(statements, /COMMIT\s*;\s*$/i);
 });
 
+test('rechaza tablas preexistentes antes de cualquier DDL (sin reutilizar esquema inseguro)', () => {
+  const catalog = statements.indexOf("to_regclass('public.pf_catalog_items')");
+  const drafts = statements.indexOf("to_regclass('public.pf_campaign_drafts')");
+  const products = statements.indexOf("to_regclass('public.pf_campaign_products')");
+  const firstDDL = statements.search(/\\bCREATE\\s+(?:UNIQUE\\s+)?(?:INDEX|TABLE)\\b/i);
+  assert.ok(catalog >= 0 && drafts > catalog && products > drafts);
+  assert.ok(firstDDL > products, 'la inspección debe preceder todo CREATE');
+  assert.match(statements.slice(drafts, firstDDL),
+    /RAISE EXCEPTION 'Campaign tables already exist; inspect schema and migrate explicitly'/i);
+});
+
 test('el vínculo a productos exige mismo propietario en ambas claves compuestas', () => {
   assert.match(statements, /UNIQUE\s*\(user_id, id\)/i);
   assert.match(statements, /FOREIGN KEY\s*\(user_id, campaign_id\)\s*REFERENCES public\.pf_campaign_drafts\s*\(user_id, id\)/i);
