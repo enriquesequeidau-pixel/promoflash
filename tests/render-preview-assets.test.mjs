@@ -8,7 +8,10 @@ test('Render preview includes all account Auth, CAPTCHA and brand dependencies',
  assert.ok(build,'missing Render buildCommand');
  const copy=build.match(/\bcp\s+(.+)\s+dist\/\s*$/);
  assert.ok(copy,'missing allowlisted copy to dist');
+ assert.match(blueprint,/autoDeployTrigger:\s*off/,'Preview must not deploy automatically');
+ assert.doesNotMatch(build,/[;|`$]|\$\(|\b(?:curl|wget|chmod|rm|mv)\b/,'Build should remain a simple static allowlist');
  const files=copy[1].trim().split(/\s+/);
+ assert.equal(new Set(files).size,files.length,'Duplicate build assets are not expected');
  const required=['index.html','landing.css','landing.js','editor.html','editor.css','editor.js','analytics-editor.js','cuenta.html','cuenta.js','config.js','privacidad.html','terminos.html','auth-captcha.mjs','auth-storage.mjs','brand.css','brand-mark.png','brand-symbol.svg'];
  for(const p of required){
    assert.ok(files.includes(p),'Unpublished required preview dependency: '+p);
