@@ -1,0 +1,43 @@
+name: PromoFlash Render preview asset and authorization gate
+on:
+  pull_request:
+    paths:
+      - 'render.yaml'
+      - 'cuenta.html'
+      - 'cuenta.js'
+      - 'auth-captcha.mjs'
+      - 'auth-storage.mjs'
+      - 'brand.css'
+      - 'brand-mark.png'
+      - 'brand-symbol.svg'
+      - 'config.js'
+      - 'tests/render-preview-assets.test.mjs'
+      - '.github/workflows/render-preview-assets.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'render.yaml'
+      - 'cuenta.html'
+      - 'cuenta.js'
+      - 'auth-captcha.mjs'
+      - 'auth-storage.mjs'
+      - 'brand.css'
+      - 'brand-mark.png'
+      - 'brand-symbol.svg'
+      - 'config.js'
+      - 'tests/render-preview-assets.test.mjs'
+      - '.github/workflows/render-preview-assets.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-asset-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify static preview asset allowlist and Live payments disabled
+        run: node --test tests/render-preview-assets.test.mjs
