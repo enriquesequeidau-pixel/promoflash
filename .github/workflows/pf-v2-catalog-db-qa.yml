@@ -47,7 +47,7 @@ jobs:
           --health-timeout 3s
           --health-retries 12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Create synthetic auth schema and users (local PostgreSQL only)
         run: |
           docker exec -i "${{ job.services.postgres.id }}" psql -X -v ON_ERROR_STOP=1 -U postgres -d pf_v2_isolated_qa < tests/sql/catalog-rls-bootstrap.sql

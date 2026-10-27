@@ -9,7 +9,7 @@ jobs:
   official-mark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: feat/brand-refresh-20261025
       - name: Prepare approved P-plus-lightning logo from Facebook page artwork
