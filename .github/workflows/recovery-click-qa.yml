@@ -1,13 +1,5 @@
 name: PromoFlash Recovery Click QA
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'cuenta.html'
-      - 'cuenta.js'
-      - 'config.js'
-      - 'tests/recovery-browser.py'
-      - '.github/workflows/recovery-click-qa.yml'
   pull_request:
     paths:
       - 'cuenta.html'
