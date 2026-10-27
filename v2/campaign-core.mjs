@@ -22,6 +22,34 @@ function utc(value) {
   return canonical;
 }
 
+function copyProductIds(ids) {
+  // Reject sparse arrays, accessors, custom properties and array subclasses.
+  // Array#some skips holes; a sparse list could otherwise pass validation and
+  // produce undefined IDs in the normalized draft.
+  if (!Array.isArray(ids) || Object.getPrototypeOf(ids) !== Array.prototype ||
+      ids.length < 1 || ids.length > CAMPAIGN_MAX_PRODUCTS) {
+    throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(ids);
+  const keys = Reflect.ownKeys(ids);
+  if (keys.length !== ids.length + 1 || !('value' in descriptors.length)) {
+    throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
+  }
+  const result = [];
+  for (let i = 0; i < ids.length; i++) {
+    const descriptor = descriptors[String(i)];
+    if (!descriptor || !descriptor.enumerable || !('value' in descriptor) ||
+        typeof descriptor.value !== 'string' || !UUID.test(descriptor.value)) {
+      throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
+    }
+    result.push(descriptor.value);
+  }
+  if (new Set(result).size !== result.length) {
+    throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
+  }
+  return result;
+}
+
 export function normalizeCampaignDraft(input) {
   // Only JSON-like own data properties are accepted. Inherited fields and
   // getters must not silently supply a draft or execute code during validation.
@@ -43,12 +71,7 @@ export function normalizeCampaignDraft(input) {
   if (!CAMPAIGN_CHANNELS.includes(fields.channel) || fields.status !== 'draft') {
     throw new TypeError('CAMPAIGN_DRAFT_ONLY');
   }
-  if (!Array.isArray(fields.productIds) || fields.productIds.length < 1 ||
-      fields.productIds.length > CAMPAIGN_MAX_PRODUCTS ||
-      fields.productIds.some(id => typeof id !== 'string' || !UUID.test(id)) ||
-      new Set(fields.productIds).size !== fields.productIds.length) {
-    throw new TypeError('CAMPAIGN_INVALID_PRODUCTS');
-  }
+  const productIds = copyProductIds(fields.productIds);
   const startsAt = utc(fields.startsAt);
   const endsAt = utc(fields.endsAt);
   if ((startsAt === null) !== (endsAt === null) ||
@@ -57,7 +80,7 @@ export function normalizeCampaignDraft(input) {
   }
   return Object.freeze({
     title: fields.title.trim(), channel: fields.channel,
-    productIds: Object.freeze([...fields.productIds]),
+    productIds: Object.freeze(productIds),
     startsAt, endsAt, status: 'draft'
   });
 }
