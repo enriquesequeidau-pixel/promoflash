@@ -71,3 +71,28 @@ export function applyCatalogDraft(doc, draft, clearPhoto) {
   const advanced = doc.getElementById('advancedSettings');
   if (advanced) advanced.open = true;
 }
+
+/** Clear only an editor draft loaded/saved through the private cloud catalog.
+ * The caller decides when the draft belongs to an account being signed out.
+ */
+export function clearCatalogDraft(doc, clearPhoto) {
+  const fields = Object.values(FIELDS).map(id => doc.getElementById(id));
+  const promo = doc.getElementById('promoType');
+  const contain = doc.getElementById('containPhoto');
+  const defaultCategory = [...doc.querySelectorAll('.category')]
+    .find(button => button.dataset.category === 'beauty');
+  if (fields.some(el => !el) || !promo || !contain || !defaultCategory ||
+      typeof clearPhoto !== 'function') {
+    throw new TypeError('CATALOG_EDITOR_UNAVAILABLE');
+  }
+  clearPhoto();
+  defaultCategory.click();
+  for (const el of fields) {
+    el.value = '';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  promo.value = 'sale';
+  promo.dispatchEvent(new Event('input', { bubbles: true }));
+  contain.checked = false;
+  contain.dispatchEvent(new Event('input', { bubbles: true }));
+}
