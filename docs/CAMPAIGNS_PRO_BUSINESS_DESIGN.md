@@ -24,6 +24,12 @@ catálogo y claves foráneas compuestas que impiden asociar un producto ajeno
 a una campaña. La posición única entre 1 y 50 limita el número de referencias
 y la restricción de estado impide publicar o programar desde la base.
 
+**Reejecución bloqueada deliberadamente:** si alguna de las tablas de campañas
+ya existe, la propuesta aborta antes de cualquier DDL. `CREATE TABLE IF NOT
+EXISTS` no demuestra que una tabla anterior tenga las claves, restricciones o
+políticas esperadas. Inspeccionar y preparar una migración explícita y respaldada;
+no borrar ni reconstruir tablas existentes para forzar la ejecución.
+
 **Cerrado por defecto:** ambas tablas usan RLS forzado, no tienen políticas
 de acceso y revocan permisos a PUBLIC, anon y authenticated. Por tanto,
 la migración por sí sola **no habilita lectura ni escritura del navegador**,
