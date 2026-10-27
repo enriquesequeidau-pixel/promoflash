@@ -102,4 +102,6 @@ test('UI descarta borradores de nube al cerrar sesión y cambiar de propietario'
   assert.match(ui, /if \(user\.id !== userId\)\s*\{\s*clearCloudOwnedDraft\(\)/);
   assert.match(ui, /if \(!catalogOwnedEditor\) return/);
   assert.match(ui, /catch \{ window\.location\.reload\(\); \}/);
+  assert.match(ui, /event === 'SIGNED_OUT'/);
+  assert.match(ui, /session\\?\\.user\\?\\.id && session\\.user\\.id !== userId/);
 });
