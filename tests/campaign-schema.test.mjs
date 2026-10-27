@@ -17,7 +17,7 @@ test('rechaza tablas preexistentes antes de cualquier DDL (sin reutilizar esquem
   const catalog = statements.indexOf("to_regclass('public.pf_catalog_items')");
   const drafts = statements.indexOf("to_regclass('public.pf_campaign_drafts')");
   const products = statements.indexOf("to_regclass('public.pf_campaign_products')");
-  const firstDDL = statements.search(/\\bCREATE\\s+(?:UNIQUE\\s+)?(?:INDEX|TABLE)\\b/i);
+  const firstDDL = statements.search(/\bCREATE\s+(?:UNIQUE\s+)?(?:INDEX|TABLE)\b/i);
   assert.ok(catalog >= 0 && drafts > catalog && products > drafts);
   assert.ok(firstDDL > products, 'la inspección debe preceder todo CREATE');
   assert.match(statements.slice(drafts, firstDDL),
