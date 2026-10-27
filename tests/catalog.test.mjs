@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { normalizeCatalogDraft, applyCatalogDraft } from '../v2/catalog-core.mjs';
+import { normalizeCatalogDraft, applyCatalogDraft, clearCatalogDraft } from '../v2/catalog-core.mjs';
 const valid = Object.freeze({ category: 'beauty', name: 'Serum', price: '$299 MXN',
   old_price: '', brand: 'Tienda', discount: '-20%', headline: 'Promoción',
   subtitle: 'Hoy', cta: 'Pide ahora', promo_type: 'sale', contain_photo: false });
@@ -62,4 +62,44 @@ test('el editor incorpora el catálogo y elimina la fotografía al cambiar de pr
   assert.match(editor, /exportNineLocal,clearPhoto/);
   assert.match(ui, /\.select\('id'\)\.single\(\)/);
   assert.match(ui, /title\.textContent = item\.name/);
+});
+
+
+test('al cambiar de cuenta se limpian datos privados cargados sin guardar ni subir fotos', () => {
+  const calls = [];
+  const ids = ['productName','price','oldPrice','brand','discount','headline','subtitle','cta','promoType','containPhoto'];
+  const els = Object.fromEntries(ids.map(id => [id, {
+    value: 'Dato privado', checked: true,
+    dispatchEvent: event => calls.push(id + ':' + event.type)
+  }]));
+  const category = { dataset: { category: 'beauty' }, click: () => calls.push('category') };
+  const doc = { getElementById: id => els[id], querySelectorAll: () => [category] };
+  const originalEvent = globalThis.Event;
+  globalThis.Event = class { constructor(type) { this.type = type; } };
+  try { clearCatalogDraft(doc, () => calls.push('clearPhoto')); }
+  finally { globalThis.Event = originalEvent; }
+  assert.deepEqual(calls.slice(0, 2), ['clearPhoto', 'category']);
+  for (const id of ids.slice(0, 8)) assert.equal(els[id].value, '');
+  assert.equal(els.promoType.value, 'sale');
+  assert.equal(els.containPhoto.checked, false);
+  assert.equal(calls.length, 12);
+});
+
+test('reset falla antes de mutar campos si el editor está incompleto', () => {
+  const field = { value: 'Dato privado' };
+  const doc = { getElementById: id => id === 'productName' ? field : null,
+    querySelectorAll: () => [] };
+  let cleared = false;
+  assert.throws(() => clearCatalogDraft(doc, () => { cleared = true; }),
+    /CATALOG_EDITOR_UNAVAILABLE/);
+  assert.equal(field.value, 'Dato privado');
+  assert.equal(cleared, false);
+});
+
+test('UI descarta borradores de nube al cerrar sesión y cambiar de propietario', () => {
+  const ui = readFileSync(new URL('../editor-catalog.mjs', import.meta.url), 'utf8');
+  assert.match(ui, /function clear\(\)\s*\{\s*clearCloudOwnedDraft\(\)/);
+  assert.match(ui, /if \(user\.id !== userId\)\s*\{\s*clearCloudOwnedDraft\(\)/);
+  assert.match(ui, /if \(!catalogOwnedEditor\) return/);
+  assert.match(ui, /catch \{ window\.location\.reload\(\); \}/);
 });
