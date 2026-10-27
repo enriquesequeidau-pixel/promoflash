@@ -57,3 +57,24 @@ test('rechaza estructuras no válidas', () => {
     assert.throws(() => normalizeCampaignDraft(value), /CAMPAIGN_INVALID_FIELDS/);
   }
 });
+
+test('rechaza campos heredados y acepta JSON sin prototipo', () => {
+  const inherited = Object.create(valid());
+  assert.throws(() => normalizeCampaignDraft(inherited), /CAMPAIGN_INVALID_FIELDS/);
+  const nullProto = Object.assign(Object.create(null), valid());
+  assert.equal(normalizeCampaignDraft(nullProto).status, 'draft');
+});
+
+test('rechaza accesores, símbolos y campos no enumerables sin invocar getters', () => {
+  let called = false;
+  const withGetter = valid();
+  Object.defineProperty(withGetter, 'title', { enumerable: true, get() { called = true; throw Error('getter called'); } });
+  assert.throws(() => normalizeCampaignDraft(withGetter), /CAMPAIGN_INVALID_FIELDS/);
+  assert.equal(called, false);
+  const withSymbol = valid();
+  withSymbol[Symbol('hidden')] = 'secret';
+  assert.throws(() => normalizeCampaignDraft(withSymbol), /CAMPAIGN_INVALID_FIELDS/);
+  const hidden = valid();
+  Object.defineProperty(hidden, 'extra', { enumerable: false, value: 'secret' });
+  assert.throws(() => normalizeCampaignDraft(hidden), /CAMPAIGN_INVALID_FIELDS/);
+});
