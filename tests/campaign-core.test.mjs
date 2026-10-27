@@ -78,3 +78,27 @@ test('rechaza accesores, símbolos y campos no enumerables sin invocar getters',
   Object.defineProperty(hidden, 'extra', { enumerable: false, value: 'secret' });
   assert.throws(() => normalizeCampaignDraft(hidden), /CAMPAIGN_INVALID_FIELDS/);
 });
+
+test('rechaza listas dispersas, accesores y propiedades ocultas sin ejecutar getters', () => {
+  let called = false;
+  const accessor = [A, B];
+  Object.defineProperty(accessor, '0', { enumerable: true, get() { called = true; throw Error('getter executed'); } });
+  const hidden = [A, B];
+  Object.defineProperty(hidden, 'hidden', { enumerable: false, value: 'secret' });
+  const symbol = [A, B];
+  symbol[Symbol('extra')] = 'secret';
+  for (const productIds of [Array(1), [, A], accessor, hidden, symbol]) {
+    assert.throws(() => normalizeCampaignDraft({ ...valid(), productIds }), /CAMPAIGN_INVALID_PRODUCTS/);
+  }
+  assert.equal(called, false);
+});
+
+test('rechaza subclases de Array y elementos no enumerables', () => {
+  class ExtendedArray extends Array {}
+  const nonEnumerable = [A, B];
+  Object.defineProperty(nonEnumerable, '0', { enumerable: false, value: A });
+  for (const productIds of [new ExtendedArray(A, B), nonEnumerable]) {
+    assert.throws(() => normalizeCampaignDraft({ ...valid(), productIds }), /CAMPAIGN_INVALID_PRODUCTS/);
+  }
+  assert.deepEqual(normalizeCampaignDraft(valid()).productIds, [A, B]);
+});
