@@ -10,6 +10,18 @@
   <link rel="icon" type="image/svg+xml" href="brand-symbol.svg">
   <link rel="stylesheet" href="brand.css?v=20261025">
   <style>.pf-pro-panel{max-width:1180px;margin:0 auto 24px;padding:20px;border:1px solid #d7c8fb;border-radius:18px;background:#f9f6ff;color:#24203e}.pf-pro-head{display:flex;gap:12px;align-items:start;justify-content:space-between}.pf-pro-head strong{font-size:19px}.pf-pro-head p{margin:5px 0 10px;font-size:14px}.pf-pro-head a{color:#5b35b3;font-weight:700}.pf-pro-panel label{display:block;font-weight:700;margin:8px 0}.pf-pro-panel select,.pf-pro-panel button{padding:10px 12px;border-radius:9px;border:1px solid #c4adee;font:inherit}.pf-pro-panel button{cursor:pointer;background:white;margin:5px}.pf-pro-panel button:disabled{opacity:.6}.pf-pro-panel .pf-pro-suggestions{display:grid;gap:8px;margin-top:12px}.pf-pro-panel .pf-pro-suggestions button{text-align:left;white-space:normal;overflow-wrap:anywhere}.pf-pro-panel small,.pf-pro-note{display:block;font-size:12px;color:#51496a;margin:10px 0 0}.pf-pro-more{margin-top:14px;padding-top:13px;border-top:1px solid #d7c8fb}.pf-pro-more h3{font-size:16px;margin:4px 0 10px}.pf-pro-more input{padding:9px;border:1px solid #c4adee;border-radius:8px;font:inherit}.pf-pro-panel [hidden]{display:none!important}@media(max-width:600px){.pf-pro-head{display:block}.pf-pro-panel{padding:16px}}</style>
+
+  <style>
+  .pf-catalog-panel{max-width:1180px;margin:0 auto 22px;padding:18px 20px;border:1px solid #dce5d7;border-radius:16px;background:#f5faf3;color:#25392c}
+  .pf-catalog-panel h2{font-size:19px;margin:0 0 6px}.pf-catalog-panel p{font-size:13px;line-height:1.5;margin:5px 0 10px}
+  .pf-catalog-panel a{color:#345b42;text-decoration:underline}.pf-catalog-panel [hidden]{display:none!important}
+  .pf-catalog-panel button{padding:9px 12px;border:1px solid #b8d1b7;border-radius:9px;background:white;color:#25392c;cursor:pointer;font:inherit;font-size:12px;font-weight:750}
+  .pf-catalog-panel button:disabled{opacity:.55}.pf-catalog-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .pf-catalog-list{display:grid;gap:7px;margin-top:12px;max-height:300px;overflow:auto}
+  .pf-catalog-row{display:flex;align-items:center;gap:8px;padding:9px;background:#fff;border:1px solid #e0e8dc;border-radius:10px}
+  .pf-catalog-row span{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px}
+  @media(max-width:600px){.pf-catalog-row{flex-wrap:wrap}.pf-catalog-row span{flex-basis:100%}}
+  </style>
 </head>
 <body class="pf-brand pf-editor">
 <header class="site-header"><div class="head-inner">
@@ -50,6 +62,18 @@
       <small>Usamos el nombre de producto y tienda de este editor. Tus fotografías permanecen en este dispositivo; los textos se verifican en el servidor.</small>
     </div>
     <p class="pf-pro-note">Editor Free siempre disponible. Las nuevas suscripciones y cobros Pro todavía no están habilitados.</p>
+  </section>
+  <section class="pf-catalog-panel" aria-label="Catálogo privado de productos">
+    <h2>📦 Mis productos guardados</h2>
+    <p id="pfCatalogStatus" role="status" aria-live="polite">Comprobando acceso al catálogo…</p>
+    <p>Guarda nombres, precios y textos en tu cuenta. Las fotos nunca se suben ni se guardan en este catálogo. <a href="cuenta.html">Iniciar sesión ↗</a></p>
+    <div id="pfCatalogControls" hidden>
+      <div class="pf-catalog-controls">
+        <button id="pfCatalogSave" type="button">Guardar producto</button>
+        <button id="pfCatalogNew" type="button">Nueva ficha (sin guardar)</button>
+      </div>
+      <div id="pfCatalogList" class="pf-catalog-list" aria-label="Productos guardados"></div>
+    </div>
   </section>
   <div class="workbench">
     <section class="setup" aria-label="Datos de tu promoción">
@@ -101,5 +125,6 @@
 <script src="analytics-editor.js" defer></script>
 <script src="editor.js" defer></script>
 <script type="module" src="editor-pro.mjs"></script>
+<script type="module" src="editor-catalog.mjs"></script>
 </body>
 </html>

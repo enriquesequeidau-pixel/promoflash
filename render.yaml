@@ -9,7 +9,7 @@ services:
     repo: https://github.com/enriquesequeidau-pixel/promoflash
     branch: main
     autoDeployTrigger: off
-    buildCommand: mkdir -p dist && cp index.html landing.css landing.js editor.html editor.css editor.js analytics-editor.js cuenta.html cuenta.js config.js privacidad.html terminos.html dist/
+    buildCommand: mkdir -p dist/v2 && cp index.html landing.css landing.js editor.html editor.css editor.js editor-pro.mjs editor-catalog.mjs analytics-editor.js cuenta.html cuenta.js auth-captcha.mjs auth-storage.mjs config.js privacidad.html terminos.html brand.css brand-symbol.svg brand-mark.png dist/ && cp v2/pro-editor-core.mjs v2/pro-mexico-tools.mjs v2/catalog-core.mjs dist/v2/
     staticPublishPath: dist
     headers:
       - path: /*
