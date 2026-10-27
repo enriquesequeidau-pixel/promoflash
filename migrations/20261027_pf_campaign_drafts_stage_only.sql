@@ -15,14 +15,14 @@ $$;
 -- A previous or manually created table may have weaker constraints/policies.
 -- CREATE TABLE IF NOT EXISTS would silently reuse it, so require explicit
 -- inspection/migration rather than claiming this script hardened it.
-DO $
+DO $$
 BEGIN
   IF to_regclass('public.pf_campaign_drafts') IS NOT NULL
      OR to_regclass('public.pf_campaign_products') IS NOT NULL THEN
     RAISE EXCEPTION 'Campaign tables already exist; inspect schema and migrate explicitly';
   END IF;
 END;
-$;
+$$;
 
 -- The catalog's id is globally unique, but a composite unique index is needed
 -- for the FK that proves product and campaign belong to the same account.
